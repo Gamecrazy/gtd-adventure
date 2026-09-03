@@ -6,7 +6,7 @@ Connect everyday actions to the life you want to build, through a bright fantasy
 
 GTD Adventure is an evolving interface prototype exploring **purpose, personal growth, and trust** without changing the meaning of GTD. Its visual direction combines ivory, gold, and royal blue with shields, scrolls, mountains, trails, and a place to return to camp.
 
-**Current interactive version: v8.2 — English by default, with a Chinese language switch.** The filename remains [`gtd-adventure-workbench-v8.html`](./docs/prototypes/gtd-adventure-workbench-v8.html) to preserve continuity with existing local prototype records.
+**[Open the hero-adventure workbench](./docs/prototypes/gtd-adventure-workbench-v8.html) — English by default, with a Chinese language switch.**
 
 > This is a standalone design prototype, not a production GTD application. Built-in items are examples. Anything you enter stays in the local prototype; there is no connection to a live GTD system or cloud sync.
 
@@ -14,7 +14,7 @@ GTD Adventure is an evolving interface prototype exploring **purpose, personal g
 
 1. Download [the current workbench HTML file](./docs/prototypes/gtd-adventure-workbench-v8.html). Use **Download raw file** on GitHub; the source-code preview does not run the interface.
 2. Open it in a modern browser with JavaScript and native `dialog` support.
-3. Look for **“v8.2 · Bilingual workbench”** at the top. It opens in English unless you previously selected Chinese. If you see an older version, check that you opened the latest file from this repository.
+3. The workbench opens in English unless you previously selected Chinese. Use the language button in the top-right corner to switch.
 
 All styles and interaction code are included in that one HTML file. No build step, online fonts, external images, or dependency installation is needed to try the interface.
 
@@ -95,7 +95,7 @@ See the detailed [growth experience principles](./docs/product-reference/growth-
 - There are no accounts, cloud backups, cross-device sync, import/export, or collaboration features.
 - Local storage is not an encrypted vault. Use demonstration content, not sensitive information or the only copy of an important commitment.
 - Browser input is not written back into the HTML file. Publishing source code does not publish the records in your browser.
-- Moving from an older copy of the HTML file to a different folder may use a different storage area. This release does not migrate data between locations.
+- Moving the HTML file to a different folder may use a different storage area. The workbench does not migrate data between locations.
 
 ## Development and tests
 
@@ -110,7 +110,7 @@ npm test
 
 Tests require **Node.js 22.13.0 or later**. Node.js is not needed just to open the HTML interface.
 
-The **37 DOM and interaction checks** cover navigation, keyboard behavior, item flow, draft retention, completion and restore, legacy records, storage failures, English defaults, language switching, translation coverage, and literal, safe rendering of user text.
+The **37 DOM and interaction checks** cover navigation, keyboard behavior, item flow, draft retention, completion and restore, saved-data loading, storage failures, English defaults, language switching, translation coverage, and literal, safe rendering of user text.
 
 These are not screenshot or real-browser layout tests. Desktop fit at 1024×750, mobile screenshots, and native-dialog focus trapping still need browser acceptance testing. The project does not claim production readiness.
 
@@ -127,7 +127,7 @@ For feedback, include the version, language, browser, screen size, steps, expect
 
 ## Repository scope
 
-This repository publishes only the current standalone hero-adventure workbench, design principles, and tests. Earlier prototype files have been removed from the current branch; they remain recoverable through Git history. It excludes the original GTD application’s backend, deployment configuration, private migration records, and Git history.
+This repository contains the standalone hero-adventure workbench, design principles, and tests. It does not include a production backend, deployment configuration, or real user data.
 
 **No online demo hosting is configured.** A public GitHub repository is not a deployed website.
 
