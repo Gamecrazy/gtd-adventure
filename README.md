@@ -4,7 +4,7 @@ English | [简体中文](./README.zh-CN.md)
 
 Connect everyday actions to the life you want to build, through a bright fantasy-adventure GTD interface.
 
-GTD Adventure is an evolving set of interface prototypes exploring **purpose, personal growth, and trust** without changing the meaning of GTD. Its current visual direction combines ivory, gold, and royal blue with shields, scrolls, mountains, trails, and a place to return to camp.
+GTD Adventure is an evolving interface prototype exploring **purpose, personal growth, and trust** without changing the meaning of GTD. Its visual direction combines ivory, gold, and royal blue with shields, scrolls, mountains, trails, and a place to return to camp.
 
 **Current interactive version: v8.2 — English by default, with a Chinese language switch.** The filename remains [`gtd-adventure-workbench-v8.html`](./docs/prototypes/gtd-adventure-workbench-v8.html) to preserve continuity with existing local prototype records.
 
@@ -30,7 +30,7 @@ A useful first journey:
 - **Your own words remain your own.** Task titles, notes, and review entries are never automatically translated, even if they match an interface label.
 - Switching languages preserves the active workspace, selected action, context filter, drafts, and completion records.
 - Language preferences are stored separately from task data. Existing item IDs and saved records remain compatible.
-- Historical v1–v7 explorations and detailed design-reference documents remain in Chinese. This bilingual release covers the current workbench and project README.
+- Detailed design-reference documents remain in Chinese. This bilingual release covers the current workbench and project README.
 
 ## What works today
 
@@ -116,21 +116,6 @@ These are not screenshot or real-browser layout tests. Desktop fit at 1024×750,
 
 For localization changes, keep item IDs and stored context values stable. Translate only authored interface copy and bundled examples, never user content. Run the full tests after interaction or language changes.
 
-## Design archive
-
-| Version | Exploration | Status |
-| --- | --- | --- |
-| [v1](./docs/prototypes/gtd-system-shell-v1.html) | System shell | Early exploration |
-| [v2](./docs/prototypes/gtd-game-shell-v2.html) | Game interface | Early exploration |
-| [v3](./docs/prototypes/gtd-fantasy-warrior-v3.html) | Fantasy warrior | Style exploration |
-| [v4](./docs/prototypes/gtd-fantasy-style-board-v4.html) | Multiple fantasy directions | Style comparison |
-| [v5](./docs/prototypes/gtd-bright-fantasy-style-board-v5.html) | Brighter fantasy directions | Style comparison |
-| [v6](./docs/prototypes/gtd-sky-paladin-shell-v6.html) | Gold-and-blue UI with a nautical story | Story direction superseded |
-| [v7](./docs/prototypes/gtd-adventure-paladin-shell-v7.html) | Bright hero-adventure world | Approved visual baseline |
-| [v8.2](./docs/prototypes/gtd-adventure-workbench-v8.html) | Bilingual five-step workbench, English by default | Current entry point |
-
-Historical versions document the design process. They are not all fully interactive.
-
 ## What comes next
 
 - Verify desktop and mobile layouts in real browsers, in both languages.
@@ -142,13 +127,13 @@ For feedback, include the version, language, browser, screen size, steps, expect
 
 ## Repository scope
 
-This repository publishes only the standalone adventure prototypes, design principles, and tests. It excludes the original GTD application’s backend, deployment configuration, private migration records, and Git history.
+This repository publishes only the current standalone hero-adventure workbench, design principles, and tests. Earlier prototype files have been removed from the current branch; they remain recoverable through Git history. It excludes the original GTD application’s backend, deployment configuration, private migration records, and Git history.
 
 **No online demo hosting is configured.** A public GitHub repository is not a deployed website.
 
 - `README.md`: English project guide, the default repository homepage.
 - `README.zh-CN.md`: Chinese project guide.
-- `docs/prototypes/`: current workbench and historical style explorations.
+- `docs/prototypes/`: the current bilingual hero-adventure workbench.
 - `docs/prototypes/tests/`: interaction and localization regression checks.
 - `docs/product-reference/`: experience principles, GTD terminology, and responsive boundaries.
 - `package.json` and `package-lock.json`: test dependencies only.
