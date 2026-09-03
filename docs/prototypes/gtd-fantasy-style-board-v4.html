@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GTD OS · 幻想风格选择板 v4</title>
+    <style>
+      :root {
+        --shell: #11100d;
+        --shell-2: #1b1812;
+        --text: #eee6d4;
+        --muted: #9e9582;
+        --line: #474033;
+        --gold: #c6a45c;
+        --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+        --song: "Songti SC", "STSong", "Noto Serif CJK SC", Georgia, serif;
+        --kai: "Kaiti SC", "STKaiti", "KaiTi", serif;
+      }
+      * { box-sizing: border-box; }
+      html { min-width: 320px; background: #090806; }
+      body {
+        margin: 0;
+        min-width: 320px;
+        min-height: 100vh;
+        overflow-x: hidden;
+        color: var(--text);
+        background: #090806;
+        font: 14px/1.45 var(--sans);
+      }
+      button { font: inherit; cursor: pointer; }
+      button:focus-visible { outline: 2px solid #f0d38e; outline-offset: 3px; }
+
+      .prototype-note {
+        min-height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3px 12px;
+        color: #827b6c;
+        background: #080705;
+        border-bottom: 1px solid #302a21;
+        font-size: 9px;
+        letter-spacing: .16em;
+        text-align: center;
+      }
+      .board {
+        width: min(1440px,100%);
+        min-height: calc(100vh - 22px);
+        margin: 0 auto;
+        background: var(--shell);
+        box-shadow: 0 30px 100px #000;
+      }
+      .board-head {
+        display: grid;
+        grid-template-columns: minmax(250px,1fr) auto;
+        min-height: 72px;
+        align-items: center;
+        gap: 20px;
+        padding: 10px 18px;
+        background: var(--shell-2);
+        border-bottom: 1px solid var(--line);
+      }
+      .board-title small,
+      .board-title strong { display: block; }
+      .board-title small { color: var(--gold); font: 10px/1 var(--song); letter-spacing: .15em; }
+      .board-title strong { margin-top: 6px; font: 700 20px/1.1 var(--song); letter-spacing: .04em; }
+      .view-controls { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+      .view-button {
+        min-height: 34px;
+        padding: 0 12px;
+        color: var(--muted);
+        background: #17140f;
+        border: 1px solid var(--line);
+        font-size: 11px;
+      }
+      .view-button[aria-pressed="true"] { color: #251c0e; background: #d9bb79; border-color: #e3cb93; }
+
+      .directions {
+        display: grid;
+        grid-template-columns: repeat(3,minmax(0,1fr));
+        gap: 1px;
+        min-height: calc(100vh - 94px);
+        background: #544b3c;
+      }
+      .direction {
+        position: relative;
+        min-width: 0;
+        min-height: 650px;
+        overflow: hidden;
+      }
+      .directions[data-view]:not([data-view="all"]) { grid-template-columns: 1fr; }
+      .directions[data-view="knight"] .direction:not([data-style="knight"]),
+      .directions[data-view="wuxia"] .direction:not([data-style="wuxia"]),
+      .directions[data-view="ranger"] .direction:not([data-style="ranger"]) { display: none; }
+      .direction-label {
+        position: absolute;
+        z-index: 10;
+        top: 13px;
+        left: 14px;
+        padding: 6px 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,.28);
+        font-size: 10px;
+        letter-spacing: .12em;
+      }
+      .direction-label b { margin-right: 6px; font-family: Georgia,serif; }
+
+      /* 王国骑士 */
+      .knight {
+        color: #e9e1cd;
+        background:
+          linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+          linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px),
+          #17212f;
+        background-size: 28px 28px;
+        font-family: var(--song);
+      }
+      .knight .direction-label { color: #182033; background: #d9bd77; border: 1px solid #f3dda7; }
+      .castle-top {
+        height: 88px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding-top: 7px;
+        background: #202c40;
+        border-bottom: 3px solid #a77e39;
+        box-shadow: 0 6px 18px rgba(0,0,0,.35);
+      }
+      .castle-top::after {
+        position: absolute;
+        top: 85px;
+        right: 0;
+        left: 0;
+        height: 12px;
+        content: "";
+        background: repeating-linear-gradient(90deg,#a77e39 0 14px,transparent 14px 27px);
+        clip-path: polygon(0 0,100% 0,100% 35%,0 100%);
+      }
+      .knight-crest {
+        display: grid;
+        width: 51px;
+        height: 60px;
+        margin-right: 12px;
+        place-items: center;
+        color: #f0d68f;
+        background: #8a2731;
+        border: 3px solid #c89b49;
+        clip-path: polygon(50% 0,93% 14%,86% 72%,50% 100%,14% 72%,7% 14%);
+        font-size: 25px;
+      }
+      .castle-title small,.castle-title strong { display:block; }
+      .castle-title small { color:#bfa76e; font-size:10px; letter-spacing:.16em; }
+      .castle-title strong { margin-top:5px; font-size:20px; letter-spacing:.08em; }
+      .knight-route {
+        display:grid;
+        grid-template-columns:repeat(5,1fr);
+        padding:17px 16px 9px;
+        color:#8790a1;
+        text-align:center;
+        font-size:9px;
+      }
+      .knight-route span { position:relative; padding-top:20px; }
+      .knight-route span::before { position:absolute; top:2px; left:calc(50% - 5px); width:8px; height:8px; content:""; background:#26364f; border:1px solid #8b713d; transform:rotate(45deg); }
+      .knight-route span:last-child { color:#f2d98e; }
+      .knight-route span:last-child::before { background:#d4ae58; box-shadow:0 0 10px rgba(212,174,88,.5); }
+      .knight-body { padding:10px 16px 16px; }
+      .royal-oath { color:#e4ca88; border-block:1px solid #7f6836; padding:9px 8px; font-size:11px; text-align:center; }
+      .knight-heading { margin:15px 0 9px; }
+      .knight-heading small { color:#bd9f58; font-size:10px; letter-spacing:.12em; }
+      .knight-heading h2 { margin:5px 0 0; font-size:22px; line-height:1.15; }
+      .decree {
+        min-height:302px;
+        padding:16px;
+        color:#302616;
+        background:#e3d1a3;
+        border:3px double #7d612c;
+        box-shadow:0 8px 22px rgba(0,0,0,.38),inset 0 0 25px rgba(93,59,16,.12);
+        clip-path:polygon(0 8px,8px 0,calc(100% - 8px) 0,100% 8px,100% calc(100% - 8px),calc(100% - 8px) 100%,8px 100%,0 calc(100% - 8px));
+      }
+      .decree-label { display:flex; align-items:center; justify-content:space-between; color:#786133; font-size:10px; }
+      .decree h3 { margin:20px 0 7px; color:#372413; font-size:21px; line-height:1.2; }
+      .decree p { margin:0; color:#765f39; font:11px/1.5 var(--sans); }
+      .knight-facts { display:grid; grid-template-columns:repeat(3,1fr); margin-top:22px; border-block:1px solid rgba(92,66,28,.28); }
+      .knight-facts div { padding:10px 5px; border-right:1px solid rgba(92,66,28,.22); }
+      .knight-facts div:last-child { border-right:0; }
+      .knight-facts small,.knight-facts b { display:block; }
+      .knight-facts small { color:#8a754e; font-size:9px; }
+      .knight-facts b { margin-top:5px; font-size:11px; }
+      .knight-action { width:100%; min-height:44px; margin-top:18px; color:#f5e5b7; background:#852c34; border:2px solid #b68e45; font:700 13px/1 var(--song); }
+      .knight-action.done { background:#4a463d; color:#b4ab94; }
+      .knight-trust { display:flex; justify-content:space-between; margin-top:12px; color:#929caf; font:10px/1.3 var(--sans); }
+      .knight-trust b { color:#d6bb78; font-weight:500; }
+
+      /* 东方游侠 */
+      .wuxia {
+        color:#211d17;
+        background:
+          radial-gradient(circle at 12% 18%,rgba(158,41,30,.08),transparent 20%),
+          linear-gradient(110deg,rgba(74,62,46,.05),transparent 50%),
+          #e9e1d0;
+        font-family:var(--kai);
+      }
+      .wuxia::before {
+        position:absolute;
+        inset:0;
+        pointer-events:none;
+        content:"";
+        opacity:.16;
+        background-image:radial-gradient(circle,rgba(43,36,27,.35) 0 1px,transparent 1px);
+        background-size:23px 19px;
+      }
+      .wuxia .direction-label { color:#f4e9d4; background:#7f211a; border:1px solid #a95343; font-family:var(--song); }
+      .ink-head { position:relative; z-index:2; display:grid; grid-template-columns:58px minmax(0,1fr); min-height:105px; padding:16px 14px 8px; border-bottom:1px solid rgba(44,37,27,.24); }
+      .vertical-title { writing-mode:vertical-rl; text-orientation:upright; padding-top:4px; border-right:1px solid rgba(44,37,27,.25); font-size:17px; letter-spacing:.12em; }
+      .ink-title { align-self:end; padding-left:14px; }
+      .ink-title small { color:#8b241c; font:10px/1 var(--song); letter-spacing:.14em; }
+      .ink-title strong { display:block; margin-top:7px; font-size:25px; line-height:1.05; }
+      .ink-mountains { position:absolute; top:22px; right:-15px; width:210px; height:110px; opacity:.18; }
+      .bamboo-route { position:relative; z-index:2; display:flex; padding:9px 14px; border-bottom:1px solid rgba(44,37,27,.2); color:#7a7164; font-size:9px; }
+      .bamboo-route span { flex:1; text-align:center; }
+      .bamboo-route span:last-child { color:#8f2019; font-weight:700; }
+      .wuxia-body { position:relative; z-index:2; padding:14px 16px 16px 28px; }
+      .red-oath { position:absolute; top:17px; left:8px; writing-mode:vertical-rl; color:#8b211a; font-size:11px; letter-spacing:.12em; }
+      .red-oath::before { display:block; width:1px; height:42px; margin:0 auto 6px; content:""; background:#8b211a; }
+      .wuxia-heading { margin-left:8px; }
+      .wuxia-heading small { color:#8e2c24; font-size:11px; }
+      .wuxia-heading h2 { margin:5px 0 0; font-size:23px; line-height:1.15; }
+      .silk-scroll { min-height:330px; margin-top:12px; padding:18px 15px; background:rgba(249,245,234,.72); border-block:2px solid #6e5f45; box-shadow:inset 0 0 24px rgba(72,58,37,.06); }
+      .seal-row { display:flex; align-items:center; justify-content:space-between; color:#776a57; font-size:10px; }
+      .seal-mark { display:grid; width:28px; height:28px; place-items:center; color:#f2dfcc; background:#913026; font:12px/1 var(--song); }
+      .silk-scroll h3 { margin:23px 0 7px; font-size:22px; line-height:1.25; }
+      .silk-scroll p { margin:0; color:#706451; font:11px/1.5 var(--sans); }
+      .wuxia-facts { display:flex; gap:0; margin-top:20px; border-block:1px solid rgba(54,46,34,.22); }
+      .wuxia-facts div { flex:1; padding:10px 6px; }
+      .wuxia-facts small,.wuxia-facts b { display:block; }
+      .wuxia-facts small { color:#827663; font-size:9px; }
+      .wuxia-facts b { margin-top:5px; font-size:12px; }
+      .wuxia-action { width:100%; min-height:44px; margin-top:17px; color:#f3e8d5; background:#29251e; border:0; border-left:5px solid #9b2f25; font:700 14px/1 var(--kai); letter-spacing:.12em; }
+      .wuxia-action.done { background:#6b6458; border-left-color:#b29a73; }
+      .wuxia-trust { display:flex; justify-content:space-between; margin-top:12px; padding-left:8px; color:#6c6356; font:10px/1.3 var(--sans); }
+      .wuxia-trust b { color:#8f2019; font-weight:500; }
+
+      /* 荒野守望者 */
+      .ranger {
+        color:#e4dcc3;
+        background:
+          radial-gradient(circle at 84% 15%,rgba(215,126,52,.16),transparent 22%),
+          #172019;
+        font-family:var(--sans);
+      }
+      .ranger .direction-label { color:#24180e; background:#d78a43; border:1px solid #f0b96e; }
+      .ranger-map { position:absolute; inset:0; width:100%; height:100%; color:#9ea37c; opacity:.12; }
+      .ranger-head { position:relative; z-index:2; display:flex; min-height:92px; align-items:end; gap:11px; padding:18px 15px 14px; background:rgba(13,20,15,.78); border-bottom:1px solid #705132; }
+      .ranger-badge { display:grid; width:46px; height:52px; place-items:center; color:#e0a65c; border:2px solid #83623d; clip-path:polygon(50% 0,92% 19%,86% 76%,50% 100%,14% 76%,8% 19%); font-size:22px; }
+      .ranger-title small,.ranger-title strong { display:block; }
+      .ranger-title small { color:#bd8b51; font-size:10px; letter-spacing:.12em; }
+      .ranger-title strong { margin-top:6px; font:700 19px/1.1 var(--song); }
+      .trail-route { position:relative; z-index:2; display:flex; padding:11px 15px; color:#7e8d77; border-bottom:1px dashed #5d5e43; font-size:9px; }
+      .trail-route span { flex:1; position:relative; text-align:center; }
+      .trail-route span::before { display:block; width:6px; height:6px; margin:0 auto 5px; content:""; background:#586855; border-radius:50%; }
+      .trail-route span:last-child { color:#e6a95e; }
+      .trail-route span:last-child::before { background:#e09a49; box-shadow:0 0 10px rgba(224,154,73,.55); }
+      .ranger-body { position:relative; z-index:2; padding:14px 15px 16px; }
+      .camp-oath { padding:9px 11px; color:#dab174; background:rgba(44,34,22,.72); border-left:3px solid #c66e38; font:11px/1.4 var(--song); }
+      .ranger-heading { margin:14px 0 9px; }
+      .ranger-heading small { color:#d38f4d; font-size:10px; letter-spacing:.1em; }
+      .ranger-heading h2 { margin:5px 0 0; font:700 22px/1.15 var(--song); }
+      .field-journal {
+        min-height:310px;
+        padding:16px;
+        color:#30271c;
+        background:#c7b080;
+        border:1px solid #75573a;
+        box-shadow:5px 7px 0 #3c2d20,0 10px 24px rgba(0,0,0,.4),inset 0 0 28px rgba(80,45,17,.15);
+        transform:rotate(-.35deg);
+        clip-path:polygon(4px 0,calc(100% - 9px) 3px,100% 10px,calc(100% - 3px) calc(100% - 7px),7px 100%,0 calc(100% - 8px));
+      }
+      .field-label { display:flex; justify-content:space-between; color:#6f593d; font:10px/1 var(--song); }
+      .field-journal h3 { margin:22px 0 7px; font:700 21px/1.2 var(--song); }
+      .field-journal p { margin:0; color:#6a5941; font-size:11px; }
+      .ranger-facts { display:grid; grid-template-columns:repeat(3,1fr); margin-top:22px; border-block:1px dashed rgba(75,55,32,.36); }
+      .ranger-facts div { padding:10px 5px; }
+      .ranger-facts small,.ranger-facts b { display:block; }
+      .ranger-facts small { color:#78664f; font-size:9px; }
+      .ranger-facts b { margin-top:5px; font-size:11px; }
+      .ranger-action { width:100%; min-height:44px; margin-top:18px; color:#f6dfb3; background:#8f4528; border:1px solid #4d291c; font:700 13px/1 var(--song); }
+      .ranger-action.done { color:#aea48d; background:#49483c; }
+      .ranger-trust { display:flex; justify-content:space-between; margin-top:13px; color:#94a08f; font-size:10px; }
+      .ranger-trust b { color:#dea15a; font-weight:500; }
+
+      .single-summary {
+        display:none;
+        position:absolute;
+        right:16px;
+        bottom:16px;
+        max-width:260px;
+        padding:10px 12px;
+        background:rgba(8,8,6,.82);
+        border:1px solid rgba(220,190,120,.35);
+        color:#ddd2b8;
+        font-size:11px;
+      }
+      .directions:not([data-view="all"]) .single-summary { display:block; }
+
+      @media (min-width: 1100px) {
+        .directions:not([data-view="all"]) .direction { min-height:calc(100vh - 94px); }
+        .directions:not([data-view="all"]) .castle-top,
+        .directions:not([data-view="all"]) .ink-head,
+        .directions:not([data-view="all"]) .ranger-head { padding-inline:clamp(18px,16vw,260px); }
+        .directions:not([data-view="all"]) .knight-body,
+        .directions:not([data-view="all"]) .wuxia-body,
+        .directions:not([data-view="all"]) .ranger-body { width:min(760px,calc(100% - 36px)); margin-inline:auto; }
+        .directions:not([data-view="all"]) .knight-route,
+        .directions:not([data-view="all"]) .bamboo-route,
+        .directions:not([data-view="all"]) .trail-route { padding-inline:20%; }
+      }
+
+      @media (max-width: 900px) {
+        .directions { grid-template-columns:1fr; }
+        .direction { min-height:650px; }
+        .single-summary { display:none !important; }
+      }
+      @media (max-width: 640px) {
+        .board-head { grid-template-columns:1fr; gap:10px; padding:12px; }
+        .view-controls { justify-content:flex-start; overflow-x:auto; flex-wrap:nowrap; padding-bottom:2px; }
+        .view-button { flex:0 0 auto; min-height:40px; }
+        .directions { min-height:0; }
+        .direction { min-height:650px; }
+      }
+      @media (prefers-reduced-motion: reduce) { * { scroll-behavior:auto !important; transition:none !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="prototype-note">幻想风格探索 · 同一套 GTD 内容 · 只比较世界观和界面气质</div>
+    <main class="board">
+      <header class="board-head">
+        <div class="board-title"><small>三条可能的冒险之路</small><strong>为 GTD OS 选择一种幻想世界</strong></div>
+        <div class="view-controls" aria-label="预览方式">
+          <button class="view-button" type="button" aria-pressed="true" data-view="all">三种并排</button>
+          <button class="view-button" type="button" aria-pressed="false" data-view="knight">王国骑士</button>
+          <button class="view-button" type="button" aria-pressed="false" data-view="wuxia">东方游侠</button>
+          <button class="view-button" type="button" aria-pressed="false" data-view="ranger">荒野守望</button>
+        </div>
+      </header>
+
+      <div class="directions" data-view="all" aria-live="polite">
+        <section class="direction knight" data-style="knight" aria-label="王国骑士风格">
+          <div class="direction-label"><b>01</b>王国骑士</div>
+          <div class="castle-top"><div class="knight-crest">⚔</div><div class="castle-title"><small>王国誓约</small><strong>骑士行动法典</strong></div></div>
+          <div class="knight-route"><span>接收信使</span><span>辨明军情</span><span>整备军需</span><span>议会复盘</span><span>踏上征程</span></div>
+          <div class="knight-body">
+            <div class="royal-oath">我愿保有稳定的力量，去创造，也去守护重要的人</div>
+            <div class="knight-heading"><small>主线征令 · 对应项目</small><h2>重建安稳的睡眠节律</h2></div>
+            <div class="decree">
+              <div class="decree-label"><span>眼前军令 · 对应下一步行动</span><span>只执行一步</span></div>
+              <h3>将手机充电器移至客厅</h3><p>无需赢得整场战役，只需完成眼前这一道明确军令。</p>
+              <div class="knight-facts"><div><small>地点</small><b>家中</b></div><div><small>心力</small><b>轻装</b></div><div><small>时间</small><b>两分钟</b></div></div>
+              <button class="knight-action finish-action" type="button">完成眼前军令</button>
+            </div>
+            <div class="knight-trust"><span>五项主线均有下一步</span><b>法典可靠</b></div>
+          </div>
+          <div class="single-summary">更庄严、更有使命与秩序感；适合强调誓约、责任、荣誉与主线征程。</div>
+        </section>
+
+        <section class="direction wuxia" data-style="wuxia" aria-label="东方游侠风格">
+          <div class="direction-label"><b>02</b>东方游侠</div>
+          <div class="ink-head">
+            <svg class="ink-mountains" viewBox="0 0 220 110" aria-hidden="true"><path d="M0 96L42 38l23 32 36-58 40 63 24-37 55 58" fill="none" stroke="currentColor" stroke-width="3"/><path d="M0 102q55-22 110 0t110 0" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            <div class="vertical-title">江湖行录</div><div class="ink-title"><small>此身所向</small><strong>问心 · 行路</strong></div>
+          </div>
+          <div class="bamboo-route"><span>收笺</span><span>辨意</span><span>理囊</span><span>照见</span><span>落子</span></div>
+          <div class="wuxia-body">
+            <div class="red-oath">初心不改</div>
+            <div class="wuxia-heading"><small>此行要事 · 对应项目</small><h2>调息安眠，重整作息</h2></div>
+            <div class="silk-scroll">
+              <div class="seal-row"><span>当下这一式 · 对应下一步行动</span><span class="seal-mark">行</span></div>
+              <h3>把充电器移至外室</h3><p>大道不在远处。先落下眼前一子，未尽之事便少一分牵挂。</p>
+              <div class="wuxia-facts"><div><small>何处</small><b>家中</b></div><div><small>心境</small><b>从容</b></div><div><small>片刻</small><b>两分钟</b></div></div>
+              <button class="wuxia-action finish-action" type="button">落下这一子</button>
+            </div>
+            <div class="wuxia-trust"><span>所托之事皆有着落</span><b>心中有底</b></div>
+          </div>
+          <div class="single-summary">更内省、更个人化；适合强调初心、修行、选择与长期自我养成。</div>
+        </section>
+
+        <section class="direction ranger" data-style="ranger" aria-label="荒野守望者风格">
+          <div class="direction-label"><b>03</b>荒野守望</div>
+          <svg class="ranger-map" viewBox="0 0 420 700" preserveAspectRatio="none" aria-hidden="true"><path d="M-20 570q70-100 138-20t130-15 180 20" fill="none" stroke="currentColor" stroke-width="4"/><path d="M40 230c70-75 124 30 190-45s110 15 170-50" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="8 9"/><circle cx="54" cy="220" r="8" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="392" cy="138" r="8" fill="none" stroke="currentColor" stroke-width="3"/></svg>
+          <div class="ranger-head"><div class="ranger-badge">▲</div><div class="ranger-title"><small>边境守望者</small><strong>荒野行迹图</strong></div></div>
+          <div class="trail-route"><span>拾迹</span><span>识途</span><span>扎营</span><span>望火</span><span>启程</span></div>
+          <div class="ranger-body">
+            <div class="camp-oath">守住自己的力量，才有余力创造并照看重要的人</div>
+            <div class="ranger-heading"><small>当前远征 · 对应项目</small><h2>穿过睡眠失序的山谷</h2></div>
+            <div class="field-journal">
+              <div class="field-label"><span>最近的路标 · 对应下一步行动</span><span>营地记录</span></div>
+              <h3>将充电器留在客厅营地</h3><p>不必看清整片荒野，只要确认眼前路标，并向前走一步。</p>
+              <div class="ranger-facts"><div><small>营地</small><b>家中</b></div><div><small>负重</small><b>很轻</b></div><div><small>路程</small><b>两分钟</b></div></div>
+              <button class="ranger-action finish-action" type="button">抵达下一个路标</button>
+            </div>
+            <div class="ranger-trust"><span>行囊已归整十二项线索</span><b>道路可信</b></div>
+          </div>
+          <div class="single-summary">更自由、更有探索与陪伴感；适合强调地图、营地、路标和长期旅途。</div>
+        </section>
+      </div>
+    </main>
+
+    <script>
+      const directions = document.querySelector('.directions');
+      document.querySelectorAll('.view-button').forEach((button) => {
+        button.addEventListener('click', () => {
+          document.querySelectorAll('.view-button').forEach((item) => item.setAttribute('aria-pressed','false'));
+          button.setAttribute('aria-pressed','true');
+          directions.dataset.view = button.dataset.view;
+        });
+      });
+      document.querySelectorAll('.finish-action').forEach((button) => {
+        const original = button.textContent;
+        button.addEventListener('click', () => {
+          const completed = button.classList.toggle('done');
+          button.textContent = completed ? '真实的一步已经完成' : original;
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,699 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GTD OS · 勇者冒险工作台 v8.1</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --sky: #eaf5fb; --royal-900: #243862; --royal-700: #47669c;
+      --ivory: #fffdf5; --ivory-deep: #f3ead1; --gold: #c79b42;
+      --gold-light: #eed286; --ink: #28344c; --muted: #637087;
+      --line: #d9ceb2; --green: #446642; --red: #9a4942;
+      --serif: "Songti SC", "STSong", "Noto Serif CJK SC", Georgia, serif;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    body { margin: 0; color: var(--ink); background: #dbe7ed; font: 14px/1.5 var(--sans); }
+    button, select, input, textarea { font: inherit; }
+    button { cursor: pointer; }
+    button:disabled { cursor: default; }
+    button, select, a { touch-action: manipulation; }
+    :focus-visible { outline: 3px solid #2855a4; outline-offset: 3px; }
+    h1, h2, h3, p { margin: 0; }
+    a { color: var(--royal-700); }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    .prototype-note { height: 26px; display: flex; align-items: center; justify-content: center; gap: 10px; background: #f2eee1; color: #666958; font-size: 11px; border-bottom: 1px solid var(--line); }
+    .world { max-width: 1440px; margin: auto; min-height: calc(100dvh - 26px); background: var(--sky); box-shadow: 0 20px 65px #24386224; }
+    .realm-header { display: grid; grid-template-columns: 248px minmax(0,1fr) 218px; height: 76px; color: var(--ivory); background: var(--royal-900); border-bottom: 3px double var(--gold); }
+    .brand { display: flex; align-items: center; gap: 11px; padding: 0 18px; border-right: 1px solid #ffffff24; }
+    .shield { display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 51px; background: var(--royal-700); color: var(--gold-light); clip-path: polygon(50% 0,94% 16%,87% 73%,50% 100%,13% 73%,6% 16%); font: 25px var(--serif); }
+    .brand small { color: var(--gold-light); font-size: 10px; letter-spacing: .16em; }
+    .brand strong { display: block; font: 700 18px/1.6 var(--serif); letter-spacing: .08em; }
+    .journey { list-style: none; padding: 0 12px; margin: 0; display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); align-items: center; }
+    .journey li { position: relative; text-align: center; font: 12px/1.3 var(--serif); color: #c1cce0; }
+    .journey li::before { position: absolute; top: 14px; left: -35%; right: 65%; border-top: 1px dotted #a6a9a1; content: ""; }
+    .journey li:first-child::before { display: none; }
+    .journey button { position: relative; display: block; width: 100%; min-height: 66px; padding: 5px 2px; color: #c1cce0; background: transparent; border: 0; font: 12px/1.3 var(--serif); }
+    .journey button:hover { background: #ffffff0d; color: #fff9e8; }
+    .journey i { display: grid; place-items: center; width: 29px; height: 29px; margin: 0 auto 5px; border: 1px solid #8c9ab3; background: #304b7c; border-radius: 50%; font: normal 11px var(--serif); }
+    .journey [aria-selected="true"] { color: var(--gold-light); }
+    .journey [aria-selected="true"] i { color: #493614; background: var(--gold-light); border-color: #fff3ca; box-shadow: 0 0 0 4px #eed28622; }
+    .header-tools { display: flex; align-items: center; justify-content: center; padding: 0 12px; gap: 9px; border-left: 1px solid #ffffff24; }
+    .header-tools small { color: #d1d9e9; font-size: 11px; }
+    .mapping-button { min-height: 44px; padding: 0 11px; color: #fff4d0; background: #38517e; border: 1px solid #bd9b53; white-space: nowrap; font-size: 12px; }
+    .mapping-button[aria-pressed="true"] { background: var(--gold-light); color: #493714; }
+    .workspace { display: grid; grid-template-columns: 248px minmax(0,1fr) 218px; height: calc(100dvh - 102px); min-height: 610px; }
+    .logbook, .hero-panel { background: #fffdf5eb; min-width: 0; display: flex; flex-direction: column; }
+    .logbook { border-right: 1px solid #c8b17a; }
+    .hero-panel { border-left: 1px solid #c8b17a; }
+    .side-title { height: 52px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 15px; color: var(--royal-900); background: var(--ivory-deep); border-bottom: 1px solid #c8b17a; }
+    .side-title h2 { font: 700 16px var(--serif); letter-spacing: .07em; }
+    .side-title small { font-size: 11px; color: #73613a; }
+    .list-tabs { display: grid; grid-template-columns: repeat(3,1fr); margin: 8px 10px 0; }
+    .list-tabs button { border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--muted); min-height: 44px; padding: 3px; font-size: 12px; }
+    .list-tabs [aria-pressed="true"] { border-bottom: 3px solid var(--gold); color: var(--royal-900); font-weight: 700; }
+    .filter-row { margin: 12px 12px 4px; display: grid; grid-template-columns: 34px minmax(0,1fr); align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+    select { min-width: 0; height: 44px; padding: 0 8px; border: 1px solid #c4baa3; background: var(--ivory); border-radius: 0; color: var(--ink); }
+    .list-caption { padding: 8px 13px; font-size: 11px; color: var(--muted); }
+    .quest-list { list-style: none; padding: 4px 10px 12px; margin: 0; overflow-y: auto; min-height: 0; }
+    .quest-list li + li { margin-top: 9px; }
+    .quest-item { position: relative; display: block; width: 100%; text-align: left; padding: 12px 11px 12px 15px; color: var(--ink); border: 1px solid #d4cbb5; background: #f7f4e9; }
+    .quest-item::before { content: ""; position: absolute; top: 10px; bottom: 10px; left: 4px; width: 2px; background: #8c9db6; }
+    .quest-item:hover { border-color: var(--gold); background: #fffaf0; }
+    .quest-item[aria-current="true"] { border-color: #ad822f; background: #fffaf0; box-shadow: inset 0 0 0 1px #eed28680; }
+    .quest-item[aria-current="true"]::before { background: var(--gold); }
+    .quest-item small { display: block; color: #74623d; font-size: 11px; }
+    .quest-item strong { display: block; margin: 5px 0; font-size: 14px; line-height: 1.5; overflow-wrap: anywhere; }
+    .quest-item .meta { display: block; color: var(--muted); font-size: 11px; }
+    .empty-list { padding: 18px 10px; color: var(--muted); font-size: 13px; }
+    .rail-footer { margin-top: auto; padding: 12px 14px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); }
+    .field { position: relative; min-width: 0; padding: 17px 20px; background: radial-gradient(ellipse at 20% 0,#fff9 0 12%,transparent 45%),linear-gradient(#bddded,#eaf3f3 58%,#f0e9d4); }
+    .landscape { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; color: #47669c; opacity: .16; }
+    .field-content { position: relative; height: 100%; display: flex; flex-direction: column; gap: 13px; min-width: 0; }
+    .page-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .page-heading h1 { color: var(--royal-900); font: 700 27px/1.35 var(--serif); letter-spacing: .08em; }
+    .page-heading small { color: #4e6383; font-size: 11px; }
+    .chapter { color: #715923; font: 12px var(--serif); white-space: nowrap; }
+    .oath { display: grid; grid-template-columns: 78px minmax(0,1fr); border: 1px solid #b9974d; background: #fffdf2ed; }
+    .oath-label { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: var(--royal-700); color: #fff6d9; padding: 10px 3px; font: 700 13px var(--serif); }
+    .oath-label .gtd { color: #f3e7c5; }
+    .oath p { align-self: center; padding: 10px 13px; font: 700 15px/1.65 var(--serif); color: #33486c; }
+    .quest-scroll { position: relative; display: flex; flex-direction: column; min-width: 0; border: 2px solid #bea05c; background: var(--ivory); box-shadow: 0 9px 25px #344b7524,inset 0 0 28px #e4c88514; }
+    .quest-scroll::before, .quest-scroll::after { position: absolute; content: ""; width: 11px; height: 11px; pointer-events: none; border-color: #926c2a; }
+    .quest-scroll::before { left: 4px; top: 4px; border-top: 1px solid; border-left: 1px solid; }
+    .quest-scroll::after { right: 4px; bottom: 4px; border-right: 1px solid; border-bottom: 1px solid; }
+    .scroll-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 41px; padding: 8px 16px; border-bottom: 1px solid #d6c28e; background: #fbf2d8; }
+    .scroll-heading strong { color: #735926; font: 700 13px var(--serif); letter-spacing: .06em; }
+    .status { display: flex; align-items: center; gap: 5px; color: var(--green); font-size: 11px; white-space: nowrap; }
+    .status::before { content: ""; width: 6px; height: 6px; background: currentColor; transform: rotate(45deg); }
+    .status.timed { color: var(--red); }
+    .action-content { padding: 17px 18px 12px; }
+    .project-line { color: #73613a; font-size: 12px; margin-bottom: 10px; }
+    .action-title { display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 12px; align-items: start; }
+    .action-emblem { display: grid; place-items: center; width: 39px; height: 44px; color: var(--gold-light); background: var(--royal-700); clip-path: polygon(50% 0,100% 13%,92% 73%,50% 100%,8% 73%,0 13%); font-size: 22px; }
+    .action-title h2 { color: var(--royal-900); font: 700 clamp(20px,1.9vw,26px)/1.45 var(--serif); overflow-wrap: anywhere; }
+    .action-hint { color: var(--muted); font-size: 12px; margin: 8px 0 0 52px; }
+    .needs { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); margin: 15px 0 0; border-top: 1px solid #ddd3bc; border-bottom: 1px solid #ddd3bc; }
+    .needs div { padding: 10px 8px; border-right: 1px solid #e6dfce; }
+    .needs div:first-child { padding-left: 0; }
+    .needs div:last-child { border: 0; }
+    .needs dt { color: var(--muted); font-size: 11px; }
+    .needs dd { margin: 3px 0 0; color: #344867; font-size: 14px; font-weight: 600; }
+    .action-note { padding-top: 10px; color: var(--muted); font-size: 12px; }
+    .action-note b { color: #695932; font-weight: 500; margin-right: 5px; }
+    .action-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 14px; background: #f4eddc; border-top: 1px solid #d4c393; }
+    .action-footer p { color: var(--muted); font-size: 11px; }
+    .primary { flex-shrink: 0; min-height: 46px; padding: 0 22px; color: #fff9e8; background: var(--royal-700); border: 2px solid var(--gold); font: 700 15px var(--serif); letter-spacing: .05em; }
+    .primary:hover { background: #365a91; }
+    .secondary { min-height: 44px; padding: 7px 13px; border: 1px solid #bba46e; color: var(--royal-900); background: #fffaf0; font-size: 13px; }
+    .secondary:hover { background: #f5e9ca; }
+    .meaning { border-left: 2px solid #a88639; padding: 0 0 0 12px; }
+    .meaning h3 { color: #546680; font: 700 12px var(--serif); margin-bottom: 7px; }
+    .meaning-path { display: grid; grid-template-columns: minmax(0,1fr) 16px minmax(0,1.2fr); align-items: start; gap: 5px; }
+    .meaning-path small { display: block; color: #586779; font-size: 11px; }
+    .meaning-path p { color: #324664; font-size: 13px; margin-top: 3px; overflow-wrap: anywhere; }
+    .meaning-path .arrow { color: #987429; padding-top: 13px; }
+    .field-footnote { margin-top: auto; color: #536681; font: 12px/1.5 var(--serif); letter-spacing: .04em; text-align: center; padding-top: 2px; }
+    .hero-inner { padding: 13px; display: flex; flex-direction: column; min-height: 0; gap: 17px; }
+    .hero-card { border: 1px solid #c8a75e; background: #fffaf0; padding: 13px 11px; }
+    .hero-row { display: flex; gap: 9px; align-items: center; }
+    .hero-row strong { display: block; color: var(--royal-900); font: 700 16px var(--serif); }
+    .hero-row small { display: block; color: #73613a; font-size: 10px; margin-bottom: 6px; }
+    .save-state { border-top: 1px solid #ded3b7; padding-top: 9px; margin-top: 11px; color: var(--muted); font-size: 11px; }
+    .save-state strong { color: var(--green); font-weight: 500; }
+    .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-bottom: 9px; }
+    .section-heading h3 { color: #66502a; font: 700 13px var(--serif); }
+    .section-heading small { font-size: 10px; color: var(--muted); }
+    .ledger { display: grid; gap: 8px; margin: 0; }
+    .ledger div { display: flex; gap: 5px; justify-content: space-between; border-bottom: 1px dotted #d1c8b6; padding-bottom: 7px; }
+    .ledger dt { color: var(--muted); font-size: 12px; }
+    .ledger dd { margin: 0; color: var(--royal-900); font: 700 16px var(--serif); }
+    .appointment { display: block; width: 100%; padding: 12px; text-align: left; border: 1px solid #c7a75c; background: #fbf0d0; }
+    .appointment strong { display: block; color: var(--red); font: 700 20px var(--serif); }
+    .appointment span { display: block; margin-top: 4px; color: var(--ink); font-weight: 600; font-size: 13px; }
+    .appointment small { display: block; margin-top: 4px; color: #6c6454; font-size: 11px; }
+    .footprints { min-height: 0; overflow-y: auto; }
+    .history { padding: 0; margin: 0; list-style: none; }
+    .history li { border-left: 1px solid #c6ab6e; padding: 0 0 12px 11px; color: var(--muted); font-size: 11px; overflow-wrap: anywhere; }
+    .history b { display: block; font-weight: 500; color: var(--royal-900); font-size: 12px; }
+    .history time { color: #79633b; }
+    .history-empty { color: var(--muted); font-size: 12px; line-height: 1.7; }
+    .gtd { font: 10px/1.3 var(--sans); color: #667249; letter-spacing: 0; }
+    body.hide-gtd .gtd { display: none; }
+    .empty-stage { padding: 22px 20px; background: var(--ivory); border: 1px solid #c8a75e; }
+    .empty-stage h2 { font: 700 22px var(--serif); color: var(--royal-900); margin-bottom: 10px; }
+    .empty-stage p { color: var(--muted); margin-bottom: 15px; }
+    .mobile-nav { display: none; }
+    dialog { width: min(470px,calc(100% - 28px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 25px; border: 2px solid var(--gold); background: var(--ivory); color: var(--ink); box-shadow: 0 20px 65px #24386255; }
+    dialog::backdrop { background: #24386299; backdrop-filter: blur(3px); }
+    .receipt-crest { width: 52px; height: 61px; margin: 0 auto 12px; font-size: 29px; }
+    .receipt-header { text-align: center; }
+    .receipt-header small { color: #755c2d; font-size: 11px; letter-spacing: .18em; }
+    .receipt-header h2 { font: 700 27px/1.4 var(--serif); color: var(--royal-900); margin: 6px 0; }
+    .receipt-action { margin: 15px 0 0; padding: 13px; border-block: 1px solid #d8c694; color: #344b70; font-weight: 600; }
+    .receipt-detail { padding: 13px 0; color: var(--muted); font-size: 13px; }
+    .receipt-detail p + p { margin-top: 7px; }
+    .receipt-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .receipt-tools .primary { grid-column: 1 / -1; }
+    .receipt-storage { margin-top: 12px; color: var(--muted); font-size: 11px; text-align: center; }
+    @media (max-width:1199px) {
+      .realm-header, .workspace { grid-template-columns: 218px minmax(0,1fr) 192px; }
+      .brand { padding: 0 12px; gap: 7px; }
+      .brand strong { font-size: 16px; }
+      .header-tools small { display: none; }
+      .field { padding: 14px; }
+      .field-content { gap: 10px; }
+      .page-heading h1 { font-size: 25px; }
+      .chapter { display: none; }
+      .hero-inner { padding: 10px; gap: 14px; }
+      .action-content { padding: 14px; }
+      .oath p { padding: 8px 11px; font-size: 14px; }
+      .action-title h2 { font-size: 21px; }
+      .action-hint { margin-left: 0; }
+      .primary { padding-inline: 16px; }
+    }
+    @media (max-width:1023px) {
+      .realm-header { grid-template-columns: 208px minmax(0,1fr) 116px; }
+      .workspace { grid-template-columns: 230px minmax(0,1fr); height: auto; min-height: calc(100dvh - 102px); }
+      .field { grid-column: 2; grid-row: 1 / 3; }
+      .hero-panel { grid-column: 1; border: 0; border-right: 1px solid #c8b17a; }
+      .hero-panel .side-title, .hero-card, .footprints { display: none; }
+      .hero-inner { gap: 12px; padding: 14px; }
+      .logbook { min-height: 420px; }
+      .field-content { height: auto; }
+      .field-footnote { padding: 10px 0; }
+    }
+    @media (max-width:767px) {
+      .prototype-note { height: 30px; font-size: 10px; gap: 6px; }
+      .realm-header { display: flex; height: auto; min-height: 134px; flex-wrap: wrap; justify-content: space-between; }
+      .brand { border: 0; }
+      .brand strong { font-size: 17px; }
+      .brand, .header-tools { min-height: 64px; }
+      .journey { display: grid; order: 3; flex: 0 0 100%; padding: 0 5px; border-top: 1px solid #ffffff24; }
+      .journey button { min-height: 65px; font-size: 11px; }
+      .journey i { width: 25px; height: 25px; }
+      .header-tools { border: 0; padding: 0 10px; }
+      .workspace { display: block; min-height: calc(100dvh - 97px); padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+      .workspace > [data-panel] { display: none; }
+      .workspace > [data-panel].mobile-active { display: flex; }
+      .workspace > .field.mobile-active { display: block; }
+      .logbook, .hero-panel { border: 0; }
+      .field { padding: 15px 12px; }
+      .field-content { gap: 13px; }
+      .page-heading h1 { font-size: 25px; }
+      .page-heading small { font-size: 11px; }
+      .oath { grid-template-columns: 67px minmax(0,1fr); }
+      .oath p { font-size: 14px; }
+      .action-content { padding: 15px 13px; }
+      .action-title { gap: 9px; grid-template-columns: 32px minmax(0,1fr); }
+      .action-emblem { width: 31px; height: 36px; font-size: 19px; }
+      .action-title h2 { font-size: 22px; }
+      .action-hint { font-size: 13px; margin-top: 10px; }
+      .needs { grid-template-columns: 1fr; }
+      .needs div { display: grid; grid-template-columns: 76px minmax(0,1fr); align-items: center; border: 0; border-bottom: 1px solid #e6dfce; padding: 8px 0; }
+      .needs dd { margin: 0; font-size: 15px; }
+      .action-footer { flex-direction: column; align-items: stretch; gap: 7px; }
+      .primary { min-height: 48px; }
+      .meaning-path p { font-size: 13px; }
+      .hero-panel .side-title, .hero-card, .footprints { display: block; }
+      .hero-panel .side-title { display: flex; }
+      .hero-inner { padding: 16px; gap: 20px; }
+      .list-caption { padding-block: 12px; }
+      .quest-list { overflow: visible; }
+      .quest-item { padding: 15px; }
+      .quest-item strong { font-size: 16px; }
+      .rail-footer { margin-top: 14px; }
+      .mobile-nav { position: fixed; z-index: 20; bottom: 0; left: 0; right: 0; display: grid; grid-template-columns: repeat(3,1fr); padding-bottom: env(safe-area-inset-bottom); border-top: 2px solid var(--gold); background: var(--royal-900); }
+      .mobile-nav button { min-height: 60px; background: transparent; color: #ced9ec; border: 0; border-right: 1px solid #ffffff22; font: 13px var(--serif); }
+      .mobile-nav [aria-pressed="true"] { color: var(--gold-light); box-shadow: inset 0 3px var(--gold); }
+      dialog { padding: 20px; }
+      .receipt-header h2 { font-size: 24px; }
+    }
+    .stage-workspace { display: grid; grid-template-columns: 248px minmax(0,1fr); height: calc(100dvh - 102px); min-height: 610px; background: linear-gradient(#c4e0ee,#edf3ee 65%,#f3ecd8); }
+    .stage-rail { display: flex; flex-direction: column; min-height: 0; background: #fffdf5e8; border-right: 1px solid #c8b17a; }
+    .stage-rail-copy { padding: 16px; color: var(--muted); font-size: 13px; }
+    .stage-rail-copy p + p { margin-top: 10px; }
+    .stage-rail-list { padding: 0 10px 12px; margin: 0; list-style: none; overflow: auto; min-height: 0; }
+    .stage-rail-list li + li { margin-top: 7px; }
+    .stage-main { min-width: 0; min-height: 0; padding: 20px 26px; display: flex; flex-direction: column; gap: 16px; }
+    .stage-intro h1 { font: 700 27px/1.4 var(--serif); color: var(--royal-900); }
+    .stage-intro p { color: #526785; font-size: 13px; margin-top: 4px; }
+    .stage-scroll { min-width: 0; min-height: 0; display: flex; flex-direction: column; border: 2px solid #bea05c; background: var(--ivory); box-shadow: 0 9px 25px #344b7524; }
+    .stage-form { display: grid; gap: 10px; padding: 16px; }
+    .field-row { display: grid; grid-template-columns: 5.5rem minmax(0,1fr); align-items: start; gap: 8px; }
+    .field-row > label { color: #5b512f; font-size: 13px; padding-top: 6px; white-space: nowrap; }
+    .field-row input, .field-row textarea, .field-row select { min-width: 0; width: 100%; color: var(--ink); border: 1px solid #c7b98f; background: #fffef9; border-radius: 0; padding: 6px 9px; }
+    .field-row input, .field-row select { height: 32px; padding-block: 3px; }
+    .field-row textarea { min-height: 84px; resize: vertical; max-height: 160px; }
+    .field-row small { display: block; color: var(--muted); font-size: 11px; margin-top: 5px; }
+    .stage-footer { position: sticky; bottom: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; padding: 12px 20px; background: #f4eddc; border-top: 1px solid #d4c393; }
+    .stage-footer p { flex: 1 1 160px; color: var(--muted); font-size: 12px; }
+    .stage-message { min-height: 18px; color: var(--green); font-size: 12px; overflow-wrap: anywhere; }
+    .stage-message.error { color: var(--red); }
+    .stage-save-status { color: var(--muted); font-size: 11px; margin-top: auto; }
+    .stage-boundary { color: var(--muted); font-size: 11px; padding: 0 3px; }
+    .organize-tab { display: flex; width: 100%; min-height: 44px; justify-content: space-between; align-items: center; padding: 9px 12px; color: #4b5e7b; border: 1px solid #d6ccb5; background: #f8f5e9; text-align: left; }
+    .organize-tab[aria-pressed="true"] { color: var(--royal-900); border-color: #ad822f; background: #fff4d7; box-shadow: inset 3px 0 var(--gold); }
+    .organize-rows { list-style: none; margin: 0; padding: 8px 18px; overflow-y: auto; min-height: 0; }
+    .organize-rows li { padding: 12px 0; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 12px; }
+    .organize-rows li:last-child { border-bottom: 0; }
+    .organize-rows .row-copy { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+    .organize-rows b { display: block; font-weight: 600; }
+    .organize-rows small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; white-space: pre-wrap; }
+    .organize-rows button { flex-shrink: 0; }
+    .review-checks { padding: 6px 18px; }
+    .review-check { display: flex; gap: 12px; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .review-check b { color: #3f5374; font-size: 14px; }
+    .review-check p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .review-check button { flex-shrink: 0; }
+    @media (min-width:1024px) {
+      .stage-scroll { max-height: 500px; }
+      .stage-form textarea { resize: none; }
+    }
+    @media (min-width:768px) and (max-width:1199px) {
+      .stage-workspace { grid-template-columns: 218px minmax(0,1fr); }
+      .stage-main { padding: 16px; gap: 12px; }
+    }
+    @media (max-width:767px) {
+      .stage-workspace { display: flex; flex-direction: column; height: auto; min-height: calc(100dvh - 164px); }
+      .stage-rail { border: 0; }
+      .stage-rail-copy { padding: 10px 14px; }
+      .stage-rail-copy p + p { margin-top: 5px; }
+      .stage-main { padding: 16px 12px 28px; gap: 13px; }
+      .stage-intro h1 { font-size: 24px; }
+      .stage-rail-list { max-height: 170px; }
+      .stage-form { padding: 15px 13px; gap: 12px; }
+      .field-row { grid-template-columns: minmax(0,1fr); gap: 5px; }
+      .field-row > label { padding: 0; }
+      .field-row input, .field-row select { height: 44px; }
+      .stage-footer { padding: 12px; position: static; }
+      .stage-footer p { flex-basis: 100%; }
+      .stage-footer button { flex: 1; }
+      #organizeCategories { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; max-height: none; padding: 10px; }
+      #organizeCategories li + li { margin: 0; }
+      .organize-rows { padding: 4px 12px; }
+      .organize-rows li { align-items: flex-start; flex-direction: column; }
+      .review-checks { padding-inline: 12px; }
+    }
+    @media (prefers-reduced-motion:reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="prototype-note"><span>v8.1 · 五步页签已接通</span><span>本地原型 · 不连接正式系统</span></div>
+  <main class="world">
+    <header class="realm-header">
+      <div class="brand"><span class="shield" aria-hidden="true">✦</span><div><small>勇者的现实征途</small><strong>誓约与冒险手记</strong></div></div>
+      <ol class="journey" role="tablist" aria-label="GTD 五步工作区">
+        <li role="presentation"><button role="tab" id="tab-capture" data-stage="capture" aria-controls="stage-capture" aria-selected="false" tabindex="-1" aria-label="收集线索 · 收集"><i aria-hidden="true">壹</i>收集线索</button></li>
+        <li role="presentation"><button role="tab" id="tab-clarify" data-stage="clarify" aria-controls="stage-clarify" aria-selected="false" tabindex="-1" aria-label="辨明线索 · 理清"><i aria-hidden="true">贰</i>辨明线索</button></li>
+        <li role="presentation"><button role="tab" id="tab-organize" data-stage="organize" aria-controls="stage-organize" aria-selected="false" tabindex="-1" aria-label="整理行囊 · 组织"><i aria-hidden="true">叁</i>整理行囊</button></li>
+        <li role="presentation"><button role="tab" id="tab-review" data-stage="review" aria-controls="stage-review" aria-selected="false" tabindex="-1" aria-label="营地回顾 · 回顾"><i aria-hidden="true">肆</i>营地回顾</button></li>
+        <li role="presentation"><button role="tab" id="tab-engage" data-stage="engage" aria-controls="stage-engage" aria-selected="true" tabindex="0" aria-label="踏上征途 · 执行"><i aria-hidden="true">伍</i>踏上征途</button></li>
+      </ol>
+      <div class="header-tools"><small id="stageLabel">执行工作台</small><button id="mappingButton" class="mapping-button" aria-pressed="true">GTD 对照</button></div>
+    </header>
+    <section class="stage-workspace" id="stage-capture" role="tabpanel" aria-labelledby="tab-capture" hidden>
+      <aside class="stage-rail"><div class="side-title"><h2>线索袋</h2><small class="gtd">工作篮</small></div><div class="stage-rail-copy"><p>想到什么，就先记下来。</p><p>这一刻不用决定怎么做，让它先有一个可以回来的地方。</p></div><div class="side-title"><h2>等待辨明</h2><small id="captureInboxCount">0 项</small></div><ul class="stage-rail-list" id="captureRecent"></ul></aside>
+      <div class="stage-main"><header class="stage-intro"><h1>收集线索 <span class="gtd">/ 收集</span></h1><p>把脑中的未尽事宜，放进冒险手记。</p></header>
+        <form class="stage-scroll" id="captureForm"><div class="scroll-heading"><strong>记下一条线索</strong><span class="status">先收下，再理清</span></div><div class="stage-form"><div class="field-row"><label for="captureText">事项</label><div><textarea id="captureText" maxlength="1000" required placeholder="有什么事正占据你的注意力？"></textarea><small>一次记录一件事，保留你自己的表达。</small></div></div><div class="field-row"><label for="captureNote">备注</label><textarea id="captureNote" maxlength="5000" placeholder="可选：补充以后需要的信息"></textarea></div><p class="stage-message" id="captureFeedback" role="status"></p></div><footer class="stage-footer"><p>切换页签时保留草稿。</p><button type="button" class="secondary" data-go-stage="clarify">去辨明线索</button><button type="submit" class="primary">放入工作篮</button></footer></form>
+        <p class="stage-boundary">这里的新增事项仅用于本地原型体验，不会写入正式系统。</p><p class="stage-save-status" data-storage-status></p>
+      </div>
+    </section>
+    <section class="stage-workspace" id="stage-clarify" role="tabpanel" aria-labelledby="tab-clarify" hidden>
+      <aside class="stage-rail"><div class="side-title"><h2>待辨明线索</h2><small id="clarifyInboxCount">0 项</small></div><div class="stage-rail-copy"><p>逐一看清：它是什么？下一步要不要行动？</p></div><ul class="stage-rail-list" id="clarifyQueue"></ul></aside>
+      <div class="stage-main"><header class="stage-intro"><h1>辨明线索 <span class="gtd">/ 理清</span></h1><p>让一件模糊的事，获得清楚的去向。</p></header>
+        <form class="stage-scroll" id="clarifyForm"><div class="scroll-heading"><strong>决定这条线索的去向</strong><span class="gtd">工作篮 → 对应清单</span></div><div class="stage-form"><div class="field-row"><label for="clarifyText">事项／行动</label><div><textarea id="clarifyText" maxlength="1000" required></textarea><small>若放入下一步行动，请写成现在可以做的具体动作。</small></div></div><div class="field-row"><label for="clarifyDestination">去向</label><select id="clarifyDestination"><option value="next">我来做 · 下一步行动</option><option value="waiting">等他人结果 · 等待</option><option value="someday">以后再考虑 · 将来/也许</option><option value="reference">留作查阅 · 参考资料</option></select></div><div class="field-row" id="clarifyContextRow"><label for="clarifyContext">情境</label><select id="clarifyContext"><option>未指定</option><option>家中</option><option>书桌前</option><option>可通话处</option><option>外出</option></select></div><div class="field-row"><label for="clarifyNote">备注</label><textarea id="clarifyNote" maxlength="5000" placeholder="可写下等待谁、相关信息等"></textarea></div><p class="stage-message" id="clarifyFeedback" role="status"></p></div><footer class="stage-footer"><p>原型只演示这四种去向。</p><button type="button" class="secondary" data-go-stage="capture">继续收集</button><button type="submit" class="primary">确认去向</button></footer></form>
+        <div class="empty-stage" id="clarifyEmpty" hidden><h2>工作篮里暂无待理清事项</h2><p>先收下一条线索，再回来决定它的去向。</p><button class="secondary" data-go-stage="capture">收集一条线索</button></div>
+        <p class="stage-boundary">定时安排、项目关联、两分钟内完成与附件等深层决策，本轮尚未展开。</p><p class="stage-save-status" data-storage-status></p>
+      </div>
+    </section>
+    <section class="stage-workspace" id="stage-organize" role="tabpanel" aria-labelledby="tab-organize" hidden>
+      <aside class="stage-rail"><div class="side-title"><h2>行囊分格</h2><small class="gtd">组织 · 清单</small></div><div class="stage-rail-copy"><p>承诺、等待与资料，各有自己的位置。</p></div><ul class="stage-rail-list" id="organizeCategories"></ul></aside>
+      <div class="stage-main"><header class="stage-intro"><h1>整理行囊 <span class="gtd">/ 组织</span></h1><p>收下的每件事，都能在对应清单中找到。</p></header><section class="stage-scroll"><div class="scroll-heading"><strong id="organizeTitle">下一步行动</strong><span id="organizeCount" class="gtd"></span></div><ul class="organize-rows" id="organizeRows"></ul></section><p class="stage-message" id="organizeFeedback" role="status"></p><p class="stage-boundary">本轮可浏览清单、进入执行，或将新收集的非行动事项送回工作篮重新理清；不包含完整清单编辑器。</p><p class="stage-save-status" data-storage-status></p></div>
+    </section>
+    <section class="stage-workspace" id="stage-review" role="tabpanel" aria-labelledby="tab-review" hidden>
+      <aside class="stage-rail"><div class="side-title"><h2>营地手记</h2><small class="gtd">回顾</small></div><div class="stage-rail-copy"><p>回到营地，看看走过的路，也看看尚未安放的承诺。</p><p>这轮先打磨「回顾准备」与笔记，不将一次点击记为完成每周回顾。</p></div></aside>
+      <div class="stage-main"><header class="stage-intro"><h1>营地回顾 <span class="gtd">/ 回顾</span></h1><p>重新看清手中的承诺，再决定接下来往哪里走。</p></header><section class="stage-scroll"><div class="scroll-heading"><strong>回顾准备</strong><span class="gtd">基于本页当前记录</span></div><div class="review-checks"><div class="review-check"><div><b>尚未辨明的线索</b><p id="reviewInbox"></p></div><button class="secondary" data-go-stage="clarify">查看工作篮</button></div><div class="review-check"><div><b>接下来能够做的事</b><p id="reviewNext"></p></div><button class="secondary" id="reviewActionsButton">查看行动</button></div><div class="review-check"><div><b>已经留下的足迹</b><p id="reviewDone"></p></div><button class="secondary" id="reviewDoneButton">查看已完成</button></div></div><form id="reviewForm"><div class="stage-form"><div class="field-row"><label for="reviewNote">回顾笔记</label><div><textarea id="reviewNote" maxlength="5000" placeholder="哪些承诺仍重要？哪些需要调整？"></textarea><small id="reviewNoteState">尚未保存笔记</small></div></div><p class="stage-message" id="reviewFeedback" role="status"></p></div><footer class="stage-footer"><p>保存笔记不等于完成每周回顾。</p><button type="submit" class="primary">保存回顾笔记</button></footer></form></section><p class="stage-save-status" data-storage-status></p></div>
+    </section>
+    <div class="workspace" id="stage-engage" role="tabpanel" aria-labelledby="tab-engage">
+      <aside class="logbook" data-panel="list" aria-labelledby="logbookTitle">
+        <div class="side-title"><h2 id="logbookTitle" tabindex="-1">冒险日志</h2><small>行动清单</small></div>
+        <div class="list-tabs" role="group" aria-label="清单切换">
+          <button data-list="next" aria-pressed="true">待行动 <span id="nextCount">3</span></button>
+          <button data-list="calendar" aria-pressed="false">约定 <span id="calendarCount">1</span></button>
+          <button data-list="done" aria-pressed="false">已完成 <span id="doneCount">0</span></button>
+        </div>
+        <div class="filter-row" id="filterRow"><label for="contextFilter">情境</label><select id="contextFilter"><option value="all">全部情境</option><option value="家中">家中</option><option value="书桌前">书桌前</option><option value="可通话处">可通话处</option><option value="外出">外出</option><option value="未指定">未指定</option></select></div>
+        <p class="list-caption" id="listCaption">下一步行动 · 3 项</p>
+        <ul class="quest-list" id="questList" aria-label="当前清单事项"></ul>
+        <div class="rail-footer">选择适合此刻的一步。<br>有固定时间的事项单独放在「约定」。</div>
+      </aside>
+      <section class="field mobile-active" data-panel="action" aria-labelledby="pageTitle">
+        <svg class="landscape" viewBox="0 0 720 740" preserveAspectRatio="none" aria-hidden="true"><path d="M-20 165L72 65l52 68 66-90 105 151M461 131l57-69 50 57 74-88 90 139M-10 660l90-94 71 87 91-126 73 116M456 706l77-114 41 53 65-90 103 152" fill="none" stroke="currentColor" stroke-width="2"/><path d="M41 248c45 81 111 42 83 140S430 482 575 655" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="6 9"/><circle cx="41" cy="248" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M575 657v-53l25 10-25 11" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <div class="field-content">
+          <div class="page-heading"><div><h1 id="pageTitle" tabindex="-1">此刻的征途</h1><small>不必走完整段旅途，先走好眼前这一步。</small></div><span class="chapter">✦ 冒险，始于行动</span></div>
+          <div id="selectedContent">
+            <div class="oath"><div class="oath-label">此生誓约<span class="gtd">目的</span></div><p id="purposeText"></p></div>
+          </div>
+          <article class="quest-scroll" id="questScroll">
+            <div class="scroll-heading"><strong id="actionKind">眼前一步 <span class="gtd">/ 下一步行动</span></strong><span class="status" id="actionStatus">可以行动</span></div>
+            <div class="action-content">
+              <p class="project-line" id="projectLine"></p>
+              <div class="action-title"><span class="action-emblem" aria-hidden="true">✦</span><h2 id="actionTitle" tabindex="-1"></h2></div>
+              <p class="action-hint" id="actionHint"></p>
+              <dl class="needs"><div><dt>所处情境</dt><dd id="contextValue"></dd></div><div><dt>所需精力</dt><dd id="energyValue"></dd></div><div><dt id="timeLabel">预计用时</dt><dd id="timeValue"></dd></div></dl>
+              <p class="action-note"><b>备注</b><span id="noteText"></span></p>
+            </div>
+            <footer class="action-footer"><p id="actionMessage">实际完成后，再在这里记下。</p><button class="primary" id="completeButton">完成这一步</button></footer>
+          </article>
+          <section class="meaning" id="meaningSection" aria-labelledby="meaningTitle"><h3 id="meaningTitle">这一步，通向哪里</h3><div class="meaning-path"><div><small>阶段目标 <span class="gtd">/ 目标</span></small><p id="goalText"></p></div><span class="arrow" aria-hidden="true">→</span><div><small>主线冒险 <span class="gtd">/ 项目</span></small><p id="projectText"></p></div></div></section>
+          <section class="empty-stage" id="emptyStage" hidden><h2 id="emptyTitle">这份清单暂时没有行动</h2><p id="emptyDescription"></p><button class="secondary" id="emptyButton">查看全部待行动</button></section>
+          <p class="field-footnote">✧ 方向由你选择，足迹由行动留下。 ✧</p>
+        </div>
+      </section>
+      <aside class="hero-panel" data-panel="journal" aria-labelledby="journalTitle">
+        <div class="side-title"><h2 id="journalTitle" tabindex="-1">旅途手记</h2><small>你的足迹</small></div>
+        <div class="hero-inner">
+          <div class="hero-card"><div class="hero-row"><span class="shield" aria-hidden="true">✦</span><div><small>这段人生的主角</small><strong>冒险者 · 你</strong></div></div><p class="save-state" id="storageStatus" role="status"></p></div>
+          <section><div class="section-heading"><h3>行囊中的承诺</h3><small>仅本地原型</small></div><dl class="ledger"><div><dt>待行动</dt><dd id="ledgerNext">3</dd></div><div><dt>定时约定</dt><dd id="ledgerCalendar">1</dd></div><div><dt>已完成</dt><dd id="ledgerDone">0</dd></div></dl></section>
+          <section id="appointmentSection"><div class="section-heading"><h3>定时约定</h3><small>日程表</small></div><button class="appointment" id="appointmentButton"><strong>18:30</strong><span>牙医复诊</span><small>9 月 3 日 · 示例安排</small></button></section>
+          <section class="footprints"><div class="section-heading"><h3>冒险足迹</h3><small>最近 3 条</small></div><ol class="history" id="historyList"></ol><p class="history-empty" id="historyEmpty">还没有操作记录。<br>完成或恢复一项行动后，变化会出现在这里。</p></section>
+        </div>
+      </aside>
+    </div>
+    <nav class="mobile-nav" aria-label="工作台面板"><button data-mobile="action" aria-pressed="true">✦ 当前行动</button><button data-mobile="list" aria-pressed="false">☷ 冒险日志</button><button data-mobile="journal" aria-pressed="false">◇ 旅途手记</button></nav>
+  </main>
+  <dialog id="completionDialog" aria-labelledby="receiptTitle" aria-describedby="receiptAction receiptProject">
+    <div class="receipt-header"><div class="shield receipt-crest" aria-hidden="true">✓</div><small>冒险足迹 · 行动已完成</small><h2 id="receiptTitle">这一步，留下了足迹</h2></div>
+    <p class="receipt-action" id="receiptAction"></p>
+    <div class="receipt-detail"><p id="receiptProject"></p><p>记录已移入「已完成」，随时可以查看或恢复。</p></div>
+    <div class="receipt-tools"><button class="primary" id="continueButton" autofocus>选择下一件事</button><button class="secondary" id="viewDoneButton">查看完成记录</button><button class="secondary" id="undoButton">撤销这次完成</button></div>
+    <p class="receipt-storage" id="receiptStorage"></p>
+  </dialog>
+  <div class="sr-only" role="status" aria-live="polite" id="announcement"></div>
+  <noscript><p>本原型需要启用 JavaScript 才能展示和操作示例事项。</p></noscript>
+  <script>
+    // Standalone prototype only: no production API, no assistant, no invented growth score.
+    const KEY = 'gtd-adventure-workbench-v8-state';
+    const exampleQuests = [
+      {id:'sleep',list:'next',title:'把手机充电器移到客厅',project:'建立稳定的睡眠节律',goal:'9 月内形成稳定的睡前安排',purpose:'保有稳定的精力，照顾好自己的生活。',area:'身心健康',context:'家中',energy:'低',duration:'2 分钟',note:'放在客厅插座旁，卧室不再保留充电位置。',hint:'现在能做的一件具体小事。'},
+      {id:'portfolio',list:'next',title:'在纸上列出首页的三个核心案例',project:'完成个人作品集改版',goal:'9 月底前完成可展示的新版作品集',purpose:'把自己的经验变成有价值、能被理解的作品。',area:'工作与创造',context:'书桌前',energy:'高',duration:'20 分钟',note:'先确定案例，不在这一步调整页面设计。',hint:'先明确内容，再进入具体的设计工作。'},
+      {id:'parents',list:'next',title:'拨通电话，确认周六午饭时间',project:null,goal:null,purpose:'保持与家人的联系，为共同相处留出时间。',area:'家人与关系',context:'可通话处',energy:'低',duration:'5 分钟',note:'确认家人的周末安排。',hint:'这是独立行动，不必为了包装额外建立项目。'},
+      {id:'dentist',list:'calendar',title:'牙医复诊',project:null,goal:null,purpose:'认真照顾身体，维持长久健康。',area:'身心健康',context:'外出',energy:'低',duration:'45 分钟',scheduled:'2026-09-03 18:30',note:'按预约时间复诊；具体地点未在此示例中提供。',hint:'有固定时间的约定，不改写成新的出行任务。'}
+    ];
+    const $ = (id) => document.getElementById(id);
+    let quests = [...exampleQuests];
+    const lists = {inbox:'工作篮',next:'下一步行动',calendar:'日程表',waiting:'等待',someday:'将来/也许',reference:'参考资料',done:'已完成'};
+    const contexts = ['未指定','家中','书桌前','可通话处','外出'];
+    let state = {version:1,done:{},events:[],items:[],captureDraft:{title:'',note:''},reviewNote:'',reviewDraft:''};
+    let storageMessage = '本地原型 · 操作后保存';
+    let storageWritable = true;
+    try {
+      const saved = localStorage.getItem(KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!parsed || parsed.version !== 1 || !parsed.done || typeof parsed.done !== 'object' || Array.isArray(parsed.done) || !Array.isArray(parsed.events)) throw new Error('invalid state');
+        const validTime = t => typeof t === 'string' && Number.isFinite(Date.parse(t));
+        const items = parsed.items ?? [];
+        const textWithin = (value,max) => typeof value === 'string' && value.length <= max;
+        if (!Array.isArray(items) || !items.every(item => item && typeof item.id === 'string' && /^local-[a-z0-9-]+$/.test(item.id) && textWithin(item.title,1000) && item.title.trim() && textWithin(item.note,5000) && ['inbox','next','waiting','someday','reference'].includes(item.list) && contexts.includes(item.context) && validTime(item.createdAt))) throw new Error('invalid items');
+        const ids = new Set([...exampleQuests,...items].map(q => q.id));
+        if (ids.size !== exampleQuests.length + items.length) throw new Error('duplicate items');
+        const actionableId = id => exampleQuests.some(q => q.id === id) || items.some(q => q.id === id && q.list === 'next');
+        if (!Object.entries(parsed.done).every(([id,t]) => ids.has(id) && validTime(t) && actionableId(id)) || !parsed.events.every(e => e && ids.has(e.id) && actionableId(e.id) && ['complete','restore'].includes(e.type) && validTime(e.at))) throw new Error('invalid record');
+        const draft = parsed.captureDraft ?? {title:'',note:''};
+        if (!draft || !textWithin(draft.title,1000) || !textWithin(draft.note,5000) || !textWithin(parsed.reviewNote ?? '',5000) || !textWithin(parsed.reviewDraft ?? '',5000)) throw new Error('invalid draft');
+        state = {version:1,done:parsed.done,events:parsed.events.slice(-100),items,captureDraft:draft,reviewNote:parsed.reviewNote ?? '',reviewDraft:parsed.reviewDraft ?? parsed.reviewNote ?? ''};
+        storageMessage = '已载入本地原型记录';
+      }
+    } catch {
+      storageWritable = false;
+      storageMessage = '旧记录无法读取；当前仅本次页面有效，不覆盖旧记录';
+    }
+    let currentList = 'next';
+    let selectedId = null;
+    let completedId = null;
+    let stage = 'engage';
+    let clarifyId = null;
+    let loadedClarifyId = null;
+    const clarifyDrafts = new Map();
+    let organizeList = 'next';
+    const currentQuest = () => quests.find(q => q.id === selectedId);
+    const isDone = q => Object.hasOwn(state.done,q.id);
+    function candidates() {
+      return quests.filter(q => currentList === 'done' ? isDone(q) : !isDone(q) && q.list === currentList)
+        .filter(q => currentList !== 'next' || $('contextFilter').value === 'all' || q.context === $('contextFilter').value);
+    }
+    function announce(text) { $('announcement').textContent = text; }
+    function save() {
+      if (storageWritable) {
+        try { localStorage.setItem(KEY,JSON.stringify(state)); storageMessage = '已保存到本浏览器 · 仅原型'; }
+        catch { storageWritable = false; storageMessage = '未能保存；仅本次页面有效，刷新会丢失更改'; }
+      }
+      $('storageStatus').textContent = storageMessage;
+      $('receiptStorage').textContent = storageWritable ? '仅保存本地原型，不会写入正式 GTD 系统。' : storageMessage;
+      document.querySelectorAll('[data-storage-status]').forEach(el => el.textContent = storageMessage);
+    }
+    function stamp(at) { return new Date(at).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}); }
+    function textElement(tag,text,className) { const el = document.createElement(tag); el.textContent = text; if(className) el.className = className; return el; }
+    function showPanel(name,focus = false) {
+      document.querySelectorAll('[data-panel]').forEach(el => el.classList.toggle('mobile-active',el.dataset.panel === name));
+      document.querySelectorAll('[data-mobile]').forEach(el => el.setAttribute('aria-pressed',String(el.dataset.mobile === name)));
+      if (focus) $({action:'pageTitle',list:'logbookTitle',journal:'journalTitle'}[name]).focus();
+    }
+    function renderList() {
+      const list = candidates();
+      const container = $('questList'); container.replaceChildren();
+      for (const q of list) {
+        const li = document.createElement('li');
+        const button = document.createElement('button'); button.className = 'quest-item'; button.dataset.quest = q.id;
+        button.setAttribute('aria-current',String(selectedId === q.id));
+        const kind = isDone(q) ? '已完成 · ' + stamp(state.done[q.id]) : q.list === 'calendar' ? '定时约定 · 9 月 3 日 18:30' : q.project ? '主线冒险 · ' + q.project : '独立行动 · ' + q.area;
+        button.append(textElement('small',(q.id.startsWith('local-') ? '' : '示例 · ') + kind),textElement('strong',q.title),textElement('span',q.context + ' · ' + q.duration,'meta'));
+        button.addEventListener('click',() => {selectedId = q.id; render(); showPanel('action'); $('actionTitle').focus();});
+        li.append(button); container.append(li);
+      }
+      if (!list.length) container.append(textElement('li','这份清单暂时没有事项。','empty-list'));
+      $('filterRow').hidden = currentList !== 'next';
+      $('listCaption').textContent = ({next:'下一步行动',calendar:'日程表',done:'已完成'})[currentList] + ' · ' + list.length + ' 项';
+      document.querySelectorAll('[data-list]').forEach(el => el.setAttribute('aria-pressed',String(el.dataset.list === currentList)));
+    }
+    function renderDetail() {
+      const q = currentQuest();
+      for (const id of ['selectedContent','questScroll','meaningSection']) $(id).hidden = !q;
+      $('emptyStage').hidden = Boolean(q);
+      if (!q) {
+        $('emptyTitle').textContent = currentList === 'done' ? '还没有完成记录' : '这份清单暂时没有行动';
+        $('emptyDescription').textContent = currentList === 'done' ? '完成一项行动后，记录会留在这里。' : currentList === 'next' && $('contextFilter').value !== 'all' ? '这个情境下没有待行动事项，可以换个情境再看看。' : '这里只表示本地原型清单为空，不代表现实中的所有承诺都已完成。';
+        const hasNext = quests.some(q => q.list === 'next' && !isDone(q));
+        $('emptyButton').textContent = hasNext ? '查看全部待行动' : '查看完成记录';
+        return;
+      }
+      const done = isDone(q);
+      $('purposeText').textContent = q.purpose;
+      $('actionTitle').textContent = q.title;
+      $('projectLine').textContent = q.project ? '主线冒险 · ' + q.project : '独立事项 · ' + q.area;
+      $('actionHint').textContent = done ? '已完成于 ' + stamp(state.done[q.id]) + ' · 本地原型记录' : q.hint;
+      $('contextValue').textContent = q.context; $('energyValue').textContent = q.energy;
+      $('timeLabel').textContent = q.scheduled ? '约定时间' : '预计用时';
+      $('timeValue').textContent = q.scheduled ? '9 月 3 日 18:30' : q.duration;
+      $('noteText').textContent = q.note;
+      $('actionKind').replaceChildren(document.createTextNode(q.list === 'calendar' ? '定时约定 ' : '眼前一步 '),textElement('span',q.list === 'calendar' ? '/ 日程表' : '/ 下一步行动','gtd'));
+      $('actionStatus').textContent = done ? '已完成' : q.list === 'calendar' ? '固定时间' : '可以行动';
+      $('actionStatus').classList.toggle('timed',q.list === 'calendar' && !done);
+      $('actionMessage').textContent = done ? '如有误记，可以恢复到原清单。' : '实际完成后，再在这里记下。';
+      $('completeButton').textContent = done ? '恢复到原清单' : q.list === 'calendar' ? '标记约定完成' : '完成这一步';
+      $('goalText').textContent = q.goal || '未关联阶段目标';
+      $('projectText').textContent = q.project || '独立行动，无需额外项目';
+    }
+    function renderJournal() {
+      const counts = {next:quests.filter(q => q.list === 'next' && !isDone(q)).length,calendar:quests.filter(q => q.list === 'calendar' && !isDone(q)).length,done:quests.filter(isDone).length};
+      for (const [key,value] of Object.entries(counts)) { $(key+'Count').textContent = value; $('ledger'+key[0].toUpperCase()+key.slice(1)).textContent = value; }
+      $('appointmentSection').hidden = Boolean(state.done.dentist);
+      $('storageStatus').textContent = storageMessage;
+      const history = $('historyList'); history.replaceChildren();
+      for (const event of state.events.slice(-3).reverse()) {
+        const li = document.createElement('li'); const q = quests.find(q => q.id === event.id);
+        const time = textElement('time',stamp(event.at)); time.dateTime = event.at;
+        li.append(time,textElement('b',(event.type === 'complete' ? '完成 · ' : '恢复 · ') + q.title)); history.append(li);
+      }
+      $('historyEmpty').hidden = Boolean(state.events.length);
+    }
+    function render() { renderList(); renderDetail(); renderJournal(); renderJourney(); }
+    function chooseList(name,preferred) {
+      currentList = name;
+      const list = candidates(); selectedId = list.some(q => q.id === preferred) ? preferred : list[0]?.id || null;
+      render();
+    }
+    function restore(id) {
+      const q = quests.find(q => q.id === id); if (!q || !isDone(q)) return;
+      delete state.done[id]; state.events.push({id,type:'restore',at:new Date().toISOString()}); state.events = state.events.slice(-100);
+      save(); $('contextFilter').value = 'all'; chooseList(q.list,id); showPanel('action');
+      $('completeButton').focus(); announce('已恢复：' + q.title + '。' + storageMessage);
+    }
+    function complete() {
+      const q = currentQuest(); if (!q) return;
+      if (isDone(q)) { restore(q.id); return; }
+      const at = new Date().toISOString(); state.done[q.id] = at;
+      state.events.push({id:q.id,type:'complete',at}); state.events = state.events.slice(-100); completedId = q.id;
+      save(); chooseList('done',q.id);
+      $('receiptAction').textContent = q.title;
+      $('receiptProject').textContent = q.project ? '项目「' + q.project + '」仍保留。本例没有其他下一步行动，项目未被自动完成。' : '这条独立事项已经记下完成；未额外创建项目。';
+      $('completionDialog').showModal();
+      announce('已完成：' + q.title + '。' + storageMessage);
+    }
+    $('completeButton').addEventListener('click',complete);
+    $('continueButton').addEventListener('click',() => {$('completionDialog').close(); $('contextFilter').value = 'all'; chooseList('next'); showPanel('list',true);});
+    $('viewDoneButton').addEventListener('click',() => {$('completionDialog').close(); chooseList('done',completedId); showPanel('action',true);});
+    $('undoButton').addEventListener('click',() => {$('completionDialog').close(); restore(completedId);});
+    $('completionDialog').addEventListener('cancel',event => {event.preventDefault(); $('completionDialog').close(); chooseList('done',completedId); showPanel('action'); $('completeButton').focus();});
+    $('contextFilter').addEventListener('change',() => {chooseList('next',selectedId); announce($('listCaption').textContent);});
+    document.querySelectorAll('[data-list]').forEach(el => el.addEventListener('click',() => {chooseList(el.dataset.list,selectedId); announce($('listCaption').textContent);}));
+    document.querySelectorAll('[data-mobile]').forEach(el => el.addEventListener('click',() => showPanel(el.dataset.mobile,true)));
+    $('appointmentButton').addEventListener('click',() => {chooseList('calendar','dentist'); showPanel('action'); $('actionTitle').focus();});
+    $('emptyButton').addEventListener('click',() => {$('contextFilter').value = 'all'; chooseList(quests.some(q => q.list === 'next' && !isDone(q)) ? 'next' : 'done'); showPanel('action',true);});
+    $('mappingButton').addEventListener('click',() => {const show = $('mappingButton').getAttribute('aria-pressed') !== 'true'; $('mappingButton').setAttribute('aria-pressed',String(show)); document.body.classList.toggle('hide-gtd',!show);});
+    function syncQuests() {
+      quests = [...exampleQuests,...state.items.filter(item => item.list === 'next').map(item => ({...item,project:null,goal:null,purpose:'尚未关联目的，保留你的判断。',area:'未关联关注领域',energy:'未指定',duration:'未估计',hint:'这是你理清后的下一步行动。'}))];
+    }
+    function stageName(name) { return {capture:'收集线索',clarify:'辨明线索',organize:'整理行囊',review:'营地回顾',engage:'踏上征途'}[name]; }
+    function setStage(name,updateHash = true) {
+      if (!stageName(name)) name = 'engage';
+      stage = name;
+      document.querySelectorAll('[role="tabpanel"]').forEach(el => el.hidden = el.id !== 'stage-' + name);
+      document.querySelectorAll('[data-stage]').forEach(el => { const active = el.dataset.stage === name; el.setAttribute('aria-selected',String(active)); el.tabIndex = active ? 0 : -1; });
+      document.querySelector('.mobile-nav').hidden = name !== 'engage';
+      $('stageLabel').textContent = stageName(name);
+      renderJourney();
+      if (updateHash && window.location.hash !== '#' + name) window.location.hash = name;
+      announce('已切换至' + stageName(name));
+    }
+    function feedback(id,text,error = false) { $(id).textContent = text; $(id).classList.toggle('error',error); }
+    function localReceipt() { return storageWritable ? '已保存到本地原型。' : storageMessage; }
+    function openInbox(id) { clarifyId = id; setStage('clarify'); $('clarifyText').focus(); }
+    function renderInbox() {
+      const inbox = state.items.filter(item => item.list === 'inbox');
+      $('captureInboxCount').textContent = inbox.length + ' 项'; $('clarifyInboxCount').textContent = inbox.length + ' 项';
+      for (const target of ['captureRecent','clarifyQueue']) {
+        $(target).replaceChildren();
+        for (const item of target === 'captureRecent' ? inbox.slice(-5).reverse() : inbox) {
+          const li = document.createElement('li'); const button = document.createElement('button');
+          button.className = 'quest-item'; button.dataset.inboxId = item.id;
+          if (target === 'clarifyQueue') button.setAttribute('aria-current',String(item.id === clarifyId));
+          button.append(textElement('strong',item.title),textElement('small','工作篮 · 等待理清'));
+          button.addEventListener('click',() => openInbox(item.id)); li.append(button); $(target).append(li);
+        }
+        if (!inbox.length) $(target).append(textElement('li','暂无待理清事项。','empty-list'));
+      }
+    }
+    function updateClarifyContext() { $('clarifyContextRow').hidden = $('clarifyDestination').value !== 'next'; }
+    function rememberClarifyDraft() {
+      if (!loadedClarifyId) return;
+      clarifyDrafts.set(loadedClarifyId,{title:$('clarifyText').value,note:$('clarifyNote').value,list:$('clarifyDestination').value,context:$('clarifyContext').value});
+    }
+    function renderClarify() {
+      const inbox = state.items.filter(item => item.list === 'inbox');
+      if (!inbox.some(item => item.id === clarifyId)) clarifyId = inbox[0]?.id || null;
+      $('clarifyForm').hidden = !clarifyId; $('clarifyEmpty').hidden = Boolean(clarifyId);
+      if (loadedClarifyId !== clarifyId) {
+        const item = inbox.find(item => item.id === clarifyId);
+        if (item) {
+          const draft = clarifyDrafts.get(item.id) || {...item,list:'next'};
+          $('clarifyText').value = draft.title; $('clarifyNote').value = draft.note;
+          $('clarifyDestination').value = draft.list; $('clarifyContext').value = draft.context;
+        }
+        loadedClarifyId = clarifyId;
+        updateClarifyContext();
+      }
+    }
+    function recordsFor(list) {
+      if (list === 'done') return quests.filter(isDone);
+      if (list === 'next' || list === 'calendar') return quests.filter(q => q.list === list && !isDone(q));
+      return state.items.filter(item => item.list === list);
+    }
+    function openExecution(q,list = q.list) {
+      $('contextFilter').value = 'all'; chooseList(list,q.id); setStage('engage'); showPanel('action'); $('actionTitle').focus();
+    }
+    function renderOrganize() {
+      $('organizeCategories').replaceChildren();
+      for (const [name,label] of Object.entries(lists)) {
+        const li = document.createElement('li'); const button = document.createElement('button');
+        button.className = 'organize-tab'; button.dataset.organize = name; button.setAttribute('aria-pressed',String(organizeList === name));
+        button.append(document.createTextNode(label),textElement('span',String(recordsFor(name).length)));
+        button.addEventListener('click',() => {organizeList = name; renderOrganize(); $('organizeTitle').tabIndex = -1; $('organizeTitle').focus();}); li.append(button); $('organizeCategories').append(li);
+      }
+      const records = recordsFor(organizeList);
+      $('organizeTitle').textContent = lists[organizeList]; $('organizeCount').textContent = records.length + ' 项 · 本地原型';
+      $('organizeRows').replaceChildren();
+      for (const item of records) {
+        const li = document.createElement('li'); const copy = textElement('div','','row-copy');
+        copy.append(textElement('b',item.title),textElement('small',item.note || '暂无备注'));
+        const button = document.createElement('button'); button.className = 'secondary';
+        if (organizeList === 'inbox') { button.textContent = '前往理清'; button.addEventListener('click',() => openInbox(item.id)); }
+        else if (['next','calendar','done'].includes(organizeList)) { button.textContent = organizeList === 'done' ? '查看完成记录' : '前往执行'; button.addEventListener('click',() => openExecution(item,organizeList)); }
+        else { button.textContent = '送回工作篮'; button.addEventListener('click',() => {item.list = 'inbox'; clarifyDrafts.delete(item.id); save(); renderJourney(); feedback('organizeFeedback','已送回工作篮，可以重新理清。' + localReceipt());}); }
+        li.append(copy,button); $('organizeRows').append(li);
+      }
+      if (!records.length) {
+        const li = document.createElement('li'); li.append(textElement('p','这份清单还没有事项。'));
+        const button = textElement('button','收集新线索','secondary'); button.addEventListener('click',() => {setStage('capture'); $('captureText').focus();}); li.append(button); $('organizeRows').append(li);
+      }
+    }
+    function renderJourney() {
+      renderClarify(); renderInbox(); renderOrganize();
+      $('reviewInbox').textContent = recordsFor('inbox').length + ' 项待理清';
+      $('reviewNext').textContent = recordsFor('next').length + ' 项下一步行动';
+      $('reviewDone').textContent = recordsFor('done').length + ' 项完成记录';
+      document.querySelectorAll('[data-storage-status]').forEach(el => el.textContent = storageMessage);
+    }
+    document.querySelectorAll('[data-stage]').forEach((el,index,buttons) => {
+      el.addEventListener('click',() => setStage(el.dataset.stage));
+      el.addEventListener('keydown',event => {
+        const destination = {ArrowRight:(index+1)%buttons.length,ArrowLeft:(index-1+buttons.length)%buttons.length,Home:0,End:buttons.length-1}[event.key];
+        if (destination === undefined) return;
+        event.preventDefault(); buttons[destination].focus(); setStage(buttons[destination].dataset.stage);
+      });
+    });
+    document.querySelectorAll('[data-go-stage]').forEach(el => el.addEventListener('click',() => {setStage(el.dataset.goStage); $('tab-'+el.dataset.goStage).focus();}));
+    window.addEventListener('hashchange',() => setStage(window.location.hash.slice(1),false));
+    $('captureText').value = state.captureDraft.title; $('captureNote').value = state.captureDraft.note;
+    for (const id of ['captureText','captureNote']) $(id).addEventListener('input',() => {state.captureDraft = {title:$('captureText').value,note:$('captureNote').value}; save();});
+    $('captureForm').addEventListener('submit',event => {
+      event.preventDefault(); const title = $('captureText').value.trim(); const note = $('captureNote').value;
+      if (!title || title.length > 1000 || note.length > 5000) {feedback('captureFeedback','请填写一件事，事项最多 1000 字，备注最多 5000 字。',true); $('captureText').focus(); return;}
+      const id = 'local-' + (globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + '-' + Math.random().toString(36).slice(2));
+      state.items.push({id,title,note,list:'inbox',context:'未指定',createdAt:new Date().toISOString()});
+      state.captureDraft = {title:'',note:''}; save(); $('captureText').value = ''; $('captureNote').value = '';
+      renderJourney(); feedback('captureFeedback','已放入工作篮。' + localReceipt()); $('captureText').focus();
+    });
+    for (const id of ['clarifyText','clarifyNote','clarifyContext','clarifyDestination']) $(id).addEventListener(id === 'clarifyText' || id === 'clarifyNote' ? 'input' : 'change',() => {rememberClarifyDraft(); updateClarifyContext();});
+    $('clarifyForm').addEventListener('submit',event => {
+      event.preventDefault(); const item = state.items.find(item => item.id === clarifyId && item.list === 'inbox');
+      const title = $('clarifyText').value.trim(), note = $('clarifyNote').value, destination = $('clarifyDestination').value;
+      if (!item || !title || title.length > 1000 || note.length > 5000 || !['next','waiting','someday','reference'].includes(destination)) {feedback('clarifyFeedback','请填写事项并选择有效去向。',true); return;}
+      item.title = title; item.note = note; item.list = destination; item.context = destination === 'next' ? $('clarifyContext').value : '未指定';
+      clarifyDrafts.delete(item.id); save(); syncQuests();
+      chooseList(currentList,selectedId); organizeList = destination; renderJourney();
+      feedback('clarifyFeedback','已放入「' + lists[destination] + '」。' + localReceipt());
+      if (!$('clarifyForm').hidden) $('clarifyText').focus();
+      else { setStage('organize'); feedback('organizeFeedback','已放入「' + lists[destination] + '」。' + localReceipt()); }
+    });
+    $('reviewNote').value = state.reviewDraft;
+    $('reviewNoteState').textContent = state.reviewNote ? '已有保存的本地回顾笔记' : '尚未保存笔记';
+    $('reviewNote').addEventListener('input',() => {state.reviewDraft = $('reviewNote').value; save(); $('reviewNoteState').textContent = storageWritable ? '草稿已保留；点击下方按钮确认笔记。' : '草稿仅在当前页面保留。' + storageMessage;});
+    $('reviewForm').addEventListener('submit',event => {
+      event.preventDefault(); if (!$('reviewNote').value.trim() || $('reviewNote').value.length > 5000) {feedback('reviewFeedback','请写下一点回顾，最多 5000 字。',true); $('reviewNote').focus(); return;}
+      state.reviewNote = $('reviewNote').value; state.reviewDraft = state.reviewNote; save();
+      $('reviewNoteState').textContent = '已确认这份回顾笔记'; feedback('reviewFeedback','笔记已记下，不生成每周回顾完成记录。' + localReceipt());
+    });
+    $('reviewActionsButton').addEventListener('click',() => {$('contextFilter').value = 'all'; chooseList('next'); setStage('engage'); showPanel('list',true);});
+    $('reviewDoneButton').addEventListener('click',() => {chooseList('done'); setStage('engage'); showPanel('list',true);});
+    syncQuests();
+    chooseList('next');
+    setStage(window.location.hash.slice(1) || 'engage',false);
+  </script>
+</body>
+</html>

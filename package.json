@@ -1,0 +1,16 @@
+{
+  "name": "gtd-adventure",
+  "version": "0.1.0",
+  "description": "A bright fantasy-adventure GTD interface prototype exploring purpose, growth, and trust.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "test": "node --test docs/prototypes/tests/gtd-adventure-workbench-v8.test.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "30.0.1"
+  }
+}
