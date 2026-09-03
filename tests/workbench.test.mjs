@@ -4,7 +4,7 @@ import test from 'node:test';
 import vm from 'node:vm';
 import { JSDOM, VirtualConsole } from 'jsdom';
 
-const source = readFileSync(new URL('../gtd-adventure-workbench-v8.html', import.meta.url), 'utf8');
+const source = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const storageKey = 'gtd-adventure-workbench-v8-state';
 const languageKey = 'gtd-adventure-language';
 

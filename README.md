@@ -6,13 +6,13 @@ Connect everyday actions to the life you want to build, through a bright fantasy
 
 GTD Adventure is an evolving interface prototype exploring **purpose, personal growth, and trust** without changing the meaning of GTD. Its visual direction combines ivory, gold, and royal blue with shields, scrolls, mountains, trails, and a place to return to camp.
 
-**[Open the hero-adventure workbench](./docs/prototypes/gtd-adventure-workbench-v8.html) — English by default, with a Chinese language switch.**
+**[Open the hero-adventure workbench](./index.html) — English by default, with a Chinese language switch.**
 
 > This is a standalone design prototype, not a production GTD application. Built-in items are examples. Anything you enter stays in the local prototype; there is no connection to a live GTD system or cloud sync.
 
 ## Try it
 
-1. Download [the current workbench HTML file](./docs/prototypes/gtd-adventure-workbench-v8.html). Use **Download raw file** on GitHub; the source-code preview does not run the interface.
+1. Download [`index.html`](./index.html) from the repository root. Use **Download raw file** on GitHub; the source-code preview does not run the interface.
 2. Open it in a modern browser with JavaScript and native `dialog` support.
 3. The workbench opens in English unless you previously selected Chinese. Use the language button in the top-right corner to switch.
 
@@ -133,9 +133,9 @@ This repository contains the standalone hero-adventure workbench, design princip
 
 - `README.md`: English project guide, the default repository homepage.
 - `README.zh-CN.md`: Chinese project guide.
-- `docs/prototypes/`: the current bilingual hero-adventure workbench.
-- `docs/prototypes/tests/`: interaction and localization regression checks.
-- `docs/product-reference/`: experience principles, GTD terminology, and responsive boundaries.
+- `index.html`: the application entry point, including its styles and interactions.
+- `tests/workbench.test.mjs`: interaction and localization regression checks.
+- `docs/product-reference/`: documentation only—experience principles, GTD terminology, and responsive boundaries.
 - `package.json` and `package-lock.json`: test dependencies only.
 
 ## License
