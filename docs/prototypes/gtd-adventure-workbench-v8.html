@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>GTD OS · 勇者冒险工作台 v8.1</title>
+  <title>GTD Adventure · Workbench v8.2</title>
   <style>
     :root {
       color-scheme: light;
@@ -298,11 +298,40 @@
       .organize-rows li { align-items: flex-start; flex-direction: column; }
       .review-checks { padding-inline: 12px; }
     }
+    .header-tools { gap: 6px; }
+    .header-tools > small { display: none; }
+    .header-tools button { min-height: 44px; padding-inline: 9px; white-space: nowrap; }
+    html[lang="en"] { --serif: Georgia, "Times New Roman", "Songti SC", serif; }
+    html[lang="en"] .filter-row { grid-template-columns: 50px minmax(0,1fr); }
+    html[lang="en"] .brand strong { font-size: 18px; letter-spacing: 0; }
+    html[lang="en"] .journey button { font-size: 12px; letter-spacing: 0; padding-inline: 3px; }
+    html[lang="en"] .field-row { grid-template-columns: 6.5rem minmax(0,1fr); }
+    html[lang="en"] .action-title h2 { font-size: clamp(19px,2vw,25px); }
+    html[lang="en"] .oath-label { font-size: 12px; letter-spacing: 0; }
+    html[lang="en"] .side-title { flex-wrap: wrap; gap: 3px; }
+    html[lang="en"] .list-tabs button { font-size: 11px; padding-inline: 3px; }
+    html[lang="en"] .stage-main { gap: 12px; }
+    html[lang="en"] .stage-form { gap: 8px; }
+    html[lang="en"] .review-check { padding-block: 8px; }
+    @media (min-width:768px) and (max-width:1023px) {
+      .realm-header { grid-template-columns: 184px minmax(0,1fr) 168px; }
+      html[lang="en"] .brand strong { font-size: 16px; }
+      .header-tools { padding-inline: 7px; }
+    }
+    @media (max-width:767px) {
+      html[lang="en"] .field-row { grid-template-columns: minmax(0,1fr); }
+      html[lang="en"] .journey button { font-size: 11px; }
+      html[lang="en"] .brand strong { font-size: 16px; }
+      .brand { padding-inline: 8px; }
+      .brand .shield { flex-basis: 30px; width: 30px; height: 36px; }
+      .header-tools { padding-inline: 6px; gap: 4px; }
+      .header-tools button { padding-inline: 6px; font-size: 11px; }
+    }
     @media (prefers-reduced-motion:reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
   </style>
 </head>
 <body>
-  <div class="prototype-note"><span>v8.1 · 五步页签已接通</span><span>本地原型 · 不连接正式系统</span></div>
+  <div class="prototype-note"><span>v8.2 · 双语冒险工作台</span><span>本地原型 · 不连接正式系统</span></div>
   <main class="world">
     <header class="realm-header">
       <div class="brand"><span class="shield" aria-hidden="true">✦</span><div><small>勇者的现实征途</small><strong>誓约与冒险手记</strong></div></div>
@@ -313,7 +342,7 @@
         <li role="presentation"><button role="tab" id="tab-review" data-stage="review" aria-controls="stage-review" aria-selected="false" tabindex="-1" aria-label="营地回顾 · 回顾"><i aria-hidden="true">肆</i>营地回顾</button></li>
         <li role="presentation"><button role="tab" id="tab-engage" data-stage="engage" aria-controls="stage-engage" aria-selected="true" tabindex="0" aria-label="踏上征途 · 执行"><i aria-hidden="true">伍</i>踏上征途</button></li>
       </ol>
-      <div class="header-tools"><small id="stageLabel">执行工作台</small><button id="mappingButton" class="mapping-button" aria-pressed="true">GTD 对照</button></div>
+      <div class="header-tools"><small id="stageLabel">执行工作台</small><button id="mappingButton" class="mapping-button" aria-pressed="true">GTD 对照</button><button id="languageButton" class="mapping-button" lang="zh-CN" aria-label="Switch to Chinese">中文</button></div>
     </header>
     <section class="stage-workspace" id="stage-capture" role="tabpanel" aria-labelledby="tab-capture" hidden>
       <aside class="stage-rail"><div class="side-title"><h2>线索袋</h2><small class="gtd">工作篮</small></div><div class="stage-rail-copy"><p>想到什么，就先记下来。</p><p>这一刻不用决定怎么做，让它先有一个可以回来的地方。</p></div><div class="side-title"><h2>等待辨明</h2><small id="captureInboxCount">0 项</small></div><ul class="stage-rail-list" id="captureRecent"></ul></aside>
@@ -394,10 +423,186 @@
     <p class="receipt-storage" id="receiptStorage"></p>
   </dialog>
   <div class="sr-only" role="status" aria-live="polite" id="announcement"></div>
-  <noscript><p>本原型需要启用 JavaScript 才能展示和操作示例事项。</p></noscript>
+  <noscript><p>This prototype requires JavaScript to display and interact with its sample items.</p></noscript>
   <script>
     // Standalone prototype only: no production API, no assistant, no invented growth score.
     const KEY = 'gtd-adventure-workbench-v8-state';
+    const LANGUAGE_KEY = 'gtd-adventure-language';
+    let locale = 'en';
+    try { if (localStorage.getItem(LANGUAGE_KEY) === 'zh-CN') locale = 'zh-CN'; } catch { /* English is the safe default. */ }
+    // Only authored interface copy and bundled examples enter this dictionary.
+    // Never pass user-written titles, notes or drafts through translation.
+    const english = {
+      'v8.2 · 双语冒险工作台':'v8.2 · Bilingual workbench',
+      '本地原型 · 不连接正式系统':'Local prototype · No live connection',
+      '勇者的现实征途':'A real-life adventure', '誓约与冒险手记':'GTD Adventure',
+      '壹':'I','贰':'II','叁':'III','肆':'IV','伍':'V',
+      '收集线索':'Gather Clues','辨明线索':'Read the Clues','整理行囊':'Pack Your Gear','营地回顾':'Camp Review','踏上征途':'Take the Trail',
+      '执行工作台':'Action workbench','GTD 对照':'GTD terms',
+      '线索袋':'Clue Pouch','工作篮':'Inbox',
+      '想到什么，就先记下来。':'If it comes to mind, capture it.',
+      '这一刻不用决定怎么做，让它先有一个可以回来的地方。':'No need to decide what to do yet. Give it a place you can return to.',
+      '等待辨明':'Awaiting Clarity','0 项':'0 items','/ 收集':'/ Capture',
+      '把脑中的未尽事宜，放进冒险手记。':'Put the open loops on your mind into your adventure journal.',
+      '记下一条线索':'Capture a clue','先收下，再理清':'Capture first, clarify later',
+      '事项':'Item','一次记录一件事，保留你自己的表达。':'One item at a time, in your own words.',
+      '备注':'Notes','切换页签时保留草稿。':'Drafts stay when you switch tabs.',
+      '去辨明线索':'Clarify clues','放入工作篮':'Add to Inbox',
+      '这里的新增事项仅用于本地原型体验，不会写入正式系统。':'New items stay in this local prototype, not a live GTD system.',
+      '待辨明线索':'Unsorted Clues',
+      '逐一看清：它是什么？下一步要不要行动？':'One by one: What is it? Does it need action?',
+      '/ 理清':'/ Clarify','让一件模糊的事，获得清楚的去向。':'Give an unclear item a clear destination.',
+      '决定这条线索的去向':'Choose where this clue belongs','工作篮 → 对应清单':'Inbox → Destination list',
+      '事项／行动':'Item / action','若放入下一步行动，请写成现在可以做的具体动作。':'For Next Actions, write a concrete action you can take.',
+      '去向':'Destination','我来做 · 下一步行动':'I will do it · Next Actions',
+      '等他人结果 · 等待':'Waiting on someone · Waiting For',
+      '以后再考虑 · 将来/也许':'Consider later · Someday/Maybe',
+      '留作查阅 · 参考资料':'Keep for reference · Reference',
+      '情境':'Context','未指定':'Unspecified','家中':'At home','书桌前':'At a desk','可通话处':'Can make calls','外出':'Out and about',
+      '原型只演示这四种去向。':'Four destinations in this prototype.',
+      '继续收集':'Keep capturing','确认去向':'Confirm destination',
+      '工作篮里暂无待理清事项':'Your Inbox is clear',
+      '先收下一条线索，再回来决定它的去向。':'Capture a clue, then return to decide where it belongs.',
+      '收集一条线索':'Capture a clue',
+      '定时安排、项目关联、两分钟内完成与附件等深层决策，本轮尚未展开。':'Scheduling, project links, the two-minute rule and attachments are not implemented yet.',
+      '行囊分格':'Your Gear','组织 · 清单':'Organize · Lists',
+      '承诺、等待与资料，各有自己的位置。':'Commitments, things you are waiting for and reference material each have a place.',
+      '/ 组织':'/ Organize','收下的每件事，都能在对应清单中找到。':'Find every captured item in its own list.',
+      '下一步行动':'Next Actions','等待':'Waiting For','将来/也许':'Someday/Maybe','参考资料':'Reference',
+      '本轮可浏览清单、进入执行，或将新收集的非行动事项送回工作篮重新理清；不包含完整清单编辑器。':'Browse lists, open actions, or return captured non-action items to Inbox. Full list editing is not implemented.',
+      '营地手记':'Camp Journal','回顾':'Reflect',
+      '回到营地，看看走过的路，也看看尚未安放的承诺。':'Return to camp. Look back on your path and the commitments still waiting for clarity.',
+      '这轮先打磨「回顾准备」与笔记，不将一次点击记为完成每周回顾。':'This prototype offers review preparation and notes. A click does not complete a Weekly Review.',
+      '/ 回顾':'/ Reflect','重新看清手中的承诺，再决定接下来往哪里走。':'Revisit your commitments before choosing where to go next.',
+      '回顾准备':'Prepare to reflect','基于本页当前记录':'Based on local records',
+      '尚未辨明的线索':'Clues to clarify','查看工作篮':'Open Inbox',
+      '接下来能够做的事':'Actions you can take','查看行动':'View actions',
+      '已经留下的足迹':'Steps already taken','查看已完成':'View completed',
+      '回顾笔记':'Review notes','尚未保存笔记':'No saved notes yet',
+      '保存笔记不等于完成每周回顾。':'Saving notes does not complete a Weekly Review.',
+      '保存回顾笔记':'Save review notes','冒险日志':'Quest Log','行动清单':'Action lists',
+      '待行动':'Next','约定':'Calendar','已完成':'Completed','全部情境':'All contexts',
+      '下一步行动 · 3 项':'Next Actions · 3 items',
+      '选择适合此刻的一步。':'Choose a step that fits this moment.',
+      '有固定时间的事项单独放在「约定」。':'Time-specific items have their own Calendar list.',
+      '此刻的征途':'Your Next Step',
+      '不必走完整段旅途，先走好眼前这一步。':'Not the whole journey. Just the step in front of you.',
+      '✦ 冒险，始于行动':'✦ Adventure begins with action',
+      '此生誓约':'Your Oath','目的':'Purpose','眼前一步':'One Step','/ 下一步行动':'/ Next Actions',
+      '可以行动':'Ready to act','所处情境':'Context','所需精力':'Energy','预计用时':'Estimated time',
+      '实际完成后，再在这里记下。':'Record it here after you actually do it.',
+      '完成这一步':'Complete this step','这一步，通向哪里':'Where this step leads',
+      '阶段目标':'Milestone','/ 目标':'/ Goal','主线冒险':'Main Quest','/ 项目':'/ Project',
+      '这份清单暂时没有行动':'No actions in this list','查看全部待行动':'View all next actions',
+      '✧ 方向由你选择，足迹由行动留下。 ✧':'✧ You choose the direction. Your actions leave the trail. ✧',
+      '旅途手记':'Trail Journal','你的足迹':'Your trail','这段人生的主角':'The hero of your own life',
+      '冒险者 · 你':'Adventurer · You','行囊中的承诺':'Your Commitments','仅本地原型':'Local prototype',
+      '定时约定':'Appointment','日程表':'Calendar','牙医复诊':'Dental follow-up',
+      '9 月 3 日 · 示例安排':'Sep 3 · Sample appointment',
+      '冒险足迹':'Your Footsteps','最近 3 条':'Last 3 changes','还没有操作记录。':'No changes recorded yet.',
+      '完成或恢复一项行动后，变化会出现在这里。':'Complete or restore an action to see the change here.',
+      '✦ 当前行动':'✦ Current step','☷ 冒险日志':'☷ Quest log','◇ 旅途手记':'◇ Trail journal',
+      '冒险足迹 · 行动已完成':'A step taken · Action completed',
+      '这一步，留下了足迹':'A step worth remembering',
+      '记录已移入「已完成」，随时可以查看或恢复。':'The item is now in Completed. You can view or restore it at any time.',
+      '选择下一件事':'Choose what comes next','查看完成记录':'View completed','撤销这次完成':'Undo completion',
+      'GTD 五步工作区':'The five GTD steps',
+      '收集线索 · 收集':'Gather Clues · Capture','辨明线索 · 理清':'Read the Clues · Clarify',
+      '整理行囊 · 组织':'Pack Your Gear · Organize','营地回顾 · 回顾':'Camp Review · Reflect','踏上征途 · 执行':'Take the Trail · Engage',
+      '有什么事正占据你的注意力？':'What has your attention?',
+      '可选：补充以后需要的信息':'Optional: details you may need later',
+      '可写下等待谁、相关信息等':'Who are you waiting for? Add any useful details.',
+      '哪些承诺仍重要？哪些需要调整？':'Which commitments still matter? What needs adjusting?',
+      '清单切换':'Choose a list','当前清单事项':'Items in the current list','工作台面板':'Workbench panels',
+      '把手机充电器移到客厅':'Move my phone charger to the living room',
+      '建立稳定的睡眠节律':'Build a consistent sleep routine',
+      '9 月内形成稳定的睡前安排':'Establish a consistent bedtime routine in September',
+      '保有稳定的精力，照顾好自己的生活。':'Maintain steady energy and take good care of my life.',
+      '身心健康':'Health and well-being','低':'Low','高':'High','2 分钟':'2 min','20 分钟':'20 min','5 分钟':'5 min','45 分钟':'45 min',
+      '放在客厅插座旁，卧室不再保留充电位置。':'Put it beside a living-room outlet and remove the charging spot from the bedroom.',
+      '现在能做的一件具体小事。':'One small, concrete thing I can do now.',
+      '在纸上列出首页的三个核心案例':'List the three key case studies for my homepage on paper',
+      '完成个人作品集改版':'Redesign my portfolio',
+      '9 月底前完成可展示的新版作品集':'Have a presentable new portfolio by the end of September',
+      '把自己的经验变成有价值、能被理解的作品。':'Turn my experience into useful work that others can understand.',
+      '工作与创造':'Work and creativity',
+      '先确定案例，不在这一步调整页面设计。':'Choose the case studies first. Do not redesign the page in this step.',
+      '先明确内容，再进入具体的设计工作。':'Clarify the content before starting the design work.',
+      '拨通电话，确认周六午饭时间':'Call to confirm the time for Saturday lunch',
+      '保持与家人的联系，为共同相处留出时间。':'Stay connected with family and make time to be together.',
+      '家人与关系':'Family and relationships','确认家人的周末安排。':'Check my family’s weekend plans.',
+      '这是独立行动，不必为了包装额外建立项目。':'A standalone action. No extra project is needed for the theme.',
+      '认真照顾身体，维持长久健康。':'Care for my body and long-term health.',
+      '按预约时间复诊；具体地点未在此示例中提供。':'Attend at the booked time. This sample does not specify a location.',
+      '有固定时间的约定，不改写成新的出行任务。':'A fixed-time appointment, not a newly invented travel task.',
+      '本地原型 · 操作后保存':'Local prototype · Saves after changes',
+      '已载入本地原型记录':'Local prototype records loaded',
+      '旧记录无法读取；当前仅本次页面有效，不覆盖旧记录':'Existing records could not be read. Changes last only for this page session; existing records will not be overwritten.',
+      '已保存到本浏览器 · 仅原型':'Saved in this browser · Prototype only',
+      '未能保存；仅本次页面有效，刷新会丢失更改':'Could not save. Changes last only for this page session and will be lost on refresh.',
+      '仅保存本地原型，不会写入正式 GTD 系统。':'Saved only in this local prototype, not a live GTD system.',
+      '这份清单暂时没有事项。':'No items in this list.',
+      '还没有完成记录':'No completed actions yet',
+      '完成一项行动后，记录会留在这里。':'Complete an action and its record will appear here.',
+      '这个情境下没有待行动事项，可以换个情境再看看。':'No next actions in this context. Try another context.',
+      '这里只表示本地原型清单为空，不代表现实中的所有承诺都已完成。':'Only this prototype list is empty. This does not mean all your real-life commitments are complete.',
+      '约定时间':'Scheduled time','9 月 3 日 18:30':'Sep 3, 18:30','/ 日程表':'/ Calendar','固定时间':'Fixed time',
+      '如有误记，可以恢复到原清单。':'Recorded by mistake? Restore it to its original list.',
+      '恢复到原清单':'Restore to original list','标记约定完成':'Complete appointment',
+      '未关联阶段目标':'No goal linked','独立行动，无需额外项目':'Standalone action; no extra project needed',
+      '这条独立事项已经记下完成；未额外创建项目。':'This standalone item is recorded as complete. No extra project was created.',
+      '尚未关联目的，保留你的判断。':'No purpose linked yet. That judgment is yours.',
+      '未关联关注领域':'No area of focus linked','未估计':'Not estimated',
+      '这是你理清后的下一步行动。':'This is the next action you clarified.',
+      '已保存到本地原型。':'Saved in the local prototype.',
+      '工作篮 · 等待理清':'Inbox · Awaiting clarity','暂无待理清事项。':'No items awaiting clarity.',
+      '暂无备注':'No notes yet','前往理清':'Clarify','前往执行':'Open action','送回工作篮':'Return to Inbox',
+      '已送回工作篮，可以重新理清。':'Returned to Inbox, ready to clarify again. ',
+      '这份清单还没有事项。':'No items in this list yet.','收集新线索':'Capture a new clue',
+      '请填写一件事，事项最多 1000 字，备注最多 5000 字。':'Enter an item (up to 1,000 characters) and optional notes (up to 5,000 characters).',
+      '已放入工作篮。':'Added to Inbox. ',
+      '请填写事项并选择有效去向。':'Enter an item and choose a valid destination.',
+      '已有保存的本地回顾笔记':'Saved local review notes available',
+      '草稿已保留；点击下方按钮确认笔记。':'Draft retained. Use the button below to confirm your notes.',
+      '草稿仅在当前页面保留。':'Draft kept only for this page session. ',
+      '请写下一点回顾，最多 5000 字。':'Write a reflection of up to 5,000 characters.',
+      '已确认这份回顾笔记':'Review notes confirmed',
+      '笔记已记下，不生成每周回顾完成记录。':'Notes recorded. No Weekly Review completion was recorded. '
+    };
+    const t = key => locale === 'en' ? (english[key] ?? key) : key;
+    const itemCount = count => locale === 'en' ? count + (count === 1 ? ' item' : ' items') : count + ' 项';
+    const formatted = (zh,en) => locale === 'en' ? en : zh;
+    // Capture authored nodes ONCE, before any user data is rendered. Later renders
+    // replace dynamic nodes; detached originals are intentionally ignored.
+    const staticCopy = [];
+    const walker = document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.parentElement.closest('script,style,noscript,#languageButton')) continue;
+      if (/\p{Script=Han}/u.test(node.textContent)) staticCopy.push({node,source:node.textContent});
+    }
+    const staticAttributes = [];
+    document.querySelectorAll('[aria-label],[placeholder]').forEach(el => {
+      if (el.id === 'languageButton') return;
+      for (const attr of ['aria-label','placeholder']) {
+        const value = el.getAttribute(attr);
+        if (value) staticAttributes.push({el,attr,value});
+      }
+    });
+    // Existing saved records use these canonical values; translating an option's
+    // label must never change its value, filter identity, or persisted context.
+    document.querySelectorAll('#clarifyContext option').forEach(option => option.value = option.textContent);
+    function renderLanguage() {
+      document.documentElement.lang = locale;
+      document.title = locale === 'en' ? 'GTD Adventure · Workbench v8.2' : 'GTD OS · 勇者冒险工作台 v8.2';
+      for (const {node,source} of staticCopy) if (node.isConnected) node.textContent = source.replace(source.trim(),t(source.trim()));
+      for (const {el,attr,value} of staticAttributes) el.setAttribute(attr,t(value));
+      const button = document.getElementById('languageButton');
+      button.textContent = locale === 'en' ? '中文' : 'English';
+      button.lang = locale === 'en' ? 'zh-CN' : 'en';
+      button.setAttribute('aria-label',locale === 'en' ? 'Switch to Chinese' : '切换到英文');
+    }
+    renderLanguage();
     const exampleQuests = [
       {id:'sleep',list:'next',title:'把手机充电器移到客厅',project:'建立稳定的睡眠节律',goal:'9 月内形成稳定的睡前安排',purpose:'保有稳定的精力，照顾好自己的生活。',area:'身心健康',context:'家中',energy:'低',duration:'2 分钟',note:'放在客厅插座旁，卧室不再保留充电位置。',hint:'现在能做的一件具体小事。'},
       {id:'portfolio',list:'next',title:'在纸上列出首页的三个核心案例',project:'完成个人作品集改版',goal:'9 月底前完成可展示的新版作品集',purpose:'把自己的经验变成有价值、能被理解的作品。',area:'工作与创造',context:'书桌前',energy:'高',duration:'20 分钟',note:'先确定案例，不在这一步调整页面设计。',hint:'先明确内容，再进入具体的设计工作。'},
@@ -453,11 +658,14 @@
         try { localStorage.setItem(KEY,JSON.stringify(state)); storageMessage = '已保存到本浏览器 · 仅原型'; }
         catch { storageWritable = false; storageMessage = '未能保存；仅本次页面有效，刷新会丢失更改'; }
       }
-      $('storageStatus').textContent = storageMessage;
-      $('receiptStorage').textContent = storageWritable ? '仅保存本地原型，不会写入正式 GTD 系统。' : storageMessage;
-      document.querySelectorAll('[data-storage-status]').forEach(el => el.textContent = storageMessage);
+      renderStorage();
     }
-    function stamp(at) { return new Date(at).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}); }
+    function renderStorage() {
+      $('storageStatus').textContent = t(storageMessage);
+      $('receiptStorage').textContent = t(storageWritable ? '仅保存本地原型，不会写入正式 GTD 系统。' : storageMessage);
+      document.querySelectorAll('[data-storage-status]').forEach(el => el.textContent = t(storageMessage));
+    }
+    function stamp(at) { return new Date(at).toLocaleString(locale === 'en' ? 'en-US' : 'zh-CN',{month:locale === 'en' ? 'short' : 'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}); }
     function textElement(tag,text,className) { const el = document.createElement(tag); el.textContent = text; if(className) el.className = className; return el; }
     function showPanel(name,focus = false) {
       document.querySelectorAll('[data-panel]').forEach(el => el.classList.toggle('mobile-active',el.dataset.panel === name));
@@ -471,14 +679,14 @@
         const li = document.createElement('li');
         const button = document.createElement('button'); button.className = 'quest-item'; button.dataset.quest = q.id;
         button.setAttribute('aria-current',String(selectedId === q.id));
-        const kind = isDone(q) ? '已完成 · ' + stamp(state.done[q.id]) : q.list === 'calendar' ? '定时约定 · 9 月 3 日 18:30' : q.project ? '主线冒险 · ' + q.project : '独立行动 · ' + q.area;
-        button.append(textElement('small',(q.id.startsWith('local-') ? '' : '示例 · ') + kind),textElement('strong',q.title),textElement('span',q.context + ' · ' + q.duration,'meta'));
+        const kind = isDone(q) ? t('已完成') + ' · ' + stamp(state.done[q.id]) : q.list === 'calendar' ? t('定时约定') + ' · ' + t('9 月 3 日 18:30') : q.project ? t('主线冒险') + ' · ' + q.project : formatted('独立行动','Standalone action') + ' · ' + q.area;
+        button.append(textElement('small',(q.id.startsWith('local-') ? '' : formatted('示例 · ','Sample · ')) + kind),textElement('strong',q.title),textElement('span',t(q.context) + ' · ' + q.duration,'meta'));
         button.addEventListener('click',() => {selectedId = q.id; render(); showPanel('action'); $('actionTitle').focus();});
         li.append(button); container.append(li);
       }
-      if (!list.length) container.append(textElement('li','这份清单暂时没有事项。','empty-list'));
+      if (!list.length) container.append(textElement('li',t('这份清单暂时没有事项。'),'empty-list'));
       $('filterRow').hidden = currentList !== 'next';
-      $('listCaption').textContent = ({next:'下一步行动',calendar:'日程表',done:'已完成'})[currentList] + ' · ' + list.length + ' 项';
+      $('listCaption').textContent = t(lists[currentList]) + ' · ' + itemCount(list.length);
       document.querySelectorAll('[data-list]').forEach(el => el.setAttribute('aria-pressed',String(el.dataset.list === currentList)));
     }
     function renderDetail() {
@@ -486,39 +694,39 @@
       for (const id of ['selectedContent','questScroll','meaningSection']) $(id).hidden = !q;
       $('emptyStage').hidden = Boolean(q);
       if (!q) {
-        $('emptyTitle').textContent = currentList === 'done' ? '还没有完成记录' : '这份清单暂时没有行动';
-        $('emptyDescription').textContent = currentList === 'done' ? '完成一项行动后，记录会留在这里。' : currentList === 'next' && $('contextFilter').value !== 'all' ? '这个情境下没有待行动事项，可以换个情境再看看。' : '这里只表示本地原型清单为空，不代表现实中的所有承诺都已完成。';
+        $('emptyTitle').textContent = t(currentList === 'done' ? '还没有完成记录' : '这份清单暂时没有行动');
+        $('emptyDescription').textContent = t(currentList === 'done' ? '完成一项行动后，记录会留在这里。' : currentList === 'next' && $('contextFilter').value !== 'all' ? '这个情境下没有待行动事项，可以换个情境再看看。' : '这里只表示本地原型清单为空，不代表现实中的所有承诺都已完成。');
         const hasNext = quests.some(q => q.list === 'next' && !isDone(q));
-        $('emptyButton').textContent = hasNext ? '查看全部待行动' : '查看完成记录';
+        $('emptyButton').textContent = t(hasNext ? '查看全部待行动' : '查看完成记录');
         return;
       }
       const done = isDone(q);
       $('purposeText').textContent = q.purpose;
       $('actionTitle').textContent = q.title;
-      $('projectLine').textContent = q.project ? '主线冒险 · ' + q.project : '独立事项 · ' + q.area;
-      $('actionHint').textContent = done ? '已完成于 ' + stamp(state.done[q.id]) + ' · 本地原型记录' : q.hint;
-      $('contextValue').textContent = q.context; $('energyValue').textContent = q.energy;
-      $('timeLabel').textContent = q.scheduled ? '约定时间' : '预计用时';
-      $('timeValue').textContent = q.scheduled ? '9 月 3 日 18:30' : q.duration;
+      $('projectLine').textContent = q.project ? t('主线冒险') + ' · ' + q.project : formatted('独立事项','Standalone item') + ' · ' + q.area;
+      $('actionHint').textContent = done ? formatted('已完成于 ','Completed on ') + stamp(state.done[q.id]) + formatted(' · 本地原型记录',' · Local prototype record') : q.hint;
+      $('contextValue').textContent = t(q.context); $('energyValue').textContent = q.energy;
+      $('timeLabel').textContent = t(q.scheduled ? '约定时间' : '预计用时');
+      $('timeValue').textContent = q.scheduled ? t('9 月 3 日 18:30') : q.duration;
       $('noteText').textContent = q.note;
-      $('actionKind').replaceChildren(document.createTextNode(q.list === 'calendar' ? '定时约定 ' : '眼前一步 '),textElement('span',q.list === 'calendar' ? '/ 日程表' : '/ 下一步行动','gtd'));
-      $('actionStatus').textContent = done ? '已完成' : q.list === 'calendar' ? '固定时间' : '可以行动';
+      $('actionKind').replaceChildren(document.createTextNode(t(q.list === 'calendar' ? '定时约定' : '眼前一步') + ' '),textElement('span',t(q.list === 'calendar' ? '/ 日程表' : '/ 下一步行动'),'gtd'));
+      $('actionStatus').textContent = t(done ? '已完成' : q.list === 'calendar' ? '固定时间' : '可以行动');
       $('actionStatus').classList.toggle('timed',q.list === 'calendar' && !done);
-      $('actionMessage').textContent = done ? '如有误记，可以恢复到原清单。' : '实际完成后，再在这里记下。';
-      $('completeButton').textContent = done ? '恢复到原清单' : q.list === 'calendar' ? '标记约定完成' : '完成这一步';
-      $('goalText').textContent = q.goal || '未关联阶段目标';
-      $('projectText').textContent = q.project || '独立行动，无需额外项目';
+      $('actionMessage').textContent = t(done ? '如有误记，可以恢复到原清单。' : '实际完成后，再在这里记下。');
+      $('completeButton').textContent = t(done ? '恢复到原清单' : q.list === 'calendar' ? '标记约定完成' : '完成这一步');
+      $('goalText').textContent = q.goal || t('未关联阶段目标');
+      $('projectText').textContent = q.project || t('独立行动，无需额外项目');
     }
     function renderJournal() {
       const counts = {next:quests.filter(q => q.list === 'next' && !isDone(q)).length,calendar:quests.filter(q => q.list === 'calendar' && !isDone(q)).length,done:quests.filter(isDone).length};
       for (const [key,value] of Object.entries(counts)) { $(key+'Count').textContent = value; $('ledger'+key[0].toUpperCase()+key.slice(1)).textContent = value; }
       $('appointmentSection').hidden = Boolean(state.done.dentist);
-      $('storageStatus').textContent = storageMessage;
+      renderStorage();
       const history = $('historyList'); history.replaceChildren();
       for (const event of state.events.slice(-3).reverse()) {
         const li = document.createElement('li'); const q = quests.find(q => q.id === event.id);
         const time = textElement('time',stamp(event.at)); time.dateTime = event.at;
-        li.append(time,textElement('b',(event.type === 'complete' ? '完成 · ' : '恢复 · ') + q.title)); history.append(li);
+        li.append(time,textElement('b',(event.type === 'complete' ? formatted('完成 · ','Completed · ') : formatted('恢复 · ','Restored · ')) + q.title)); history.append(li);
       }
       $('historyEmpty').hidden = Boolean(state.events.length);
     }
@@ -532,7 +740,12 @@
       const q = quests.find(q => q.id === id); if (!q || !isDone(q)) return;
       delete state.done[id]; state.events.push({id,type:'restore',at:new Date().toISOString()}); state.events = state.events.slice(-100);
       save(); $('contextFilter').value = 'all'; chooseList(q.list,id); showPanel('action');
-      $('completeButton').focus(); announce('已恢复：' + q.title + '。' + storageMessage);
+      $('completeButton').focus(); announce(formatted('已恢复：','Restored: ') + q.title + formatted('。','. ') + t(storageMessage));
+    }
+    function renderReceipt() {
+      const q = quests.find(q => q.id === completedId); if (!q) return;
+      $('receiptAction').textContent = q.title;
+      $('receiptProject').textContent = q.project ? formatted('项目「' + q.project + '」仍保留。本例没有其他下一步行动，项目未被自动完成。','The project “' + q.project + '” remains open. This sample has no other next actions; the project was not automatically completed.') : t('这条独立事项已经记下完成；未额外创建项目。');
     }
     function complete() {
       const q = currentQuest(); if (!q) return;
@@ -540,10 +753,9 @@
       const at = new Date().toISOString(); state.done[q.id] = at;
       state.events.push({id:q.id,type:'complete',at}); state.events = state.events.slice(-100); completedId = q.id;
       save(); chooseList('done',q.id);
-      $('receiptAction').textContent = q.title;
-      $('receiptProject').textContent = q.project ? '项目「' + q.project + '」仍保留。本例没有其他下一步行动，项目未被自动完成。' : '这条独立事项已经记下完成；未额外创建项目。';
+      renderReceipt();
       $('completionDialog').showModal();
-      announce('已完成：' + q.title + '。' + storageMessage);
+      announce(formatted('已完成：','Completed: ') + q.title + formatted('。','. ') + t(storageMessage));
     }
     $('completeButton').addEventListener('click',complete);
     $('continueButton').addEventListener('click',() => {$('completionDialog').close(); $('contextFilter').value = 'all'; chooseList('next'); showPanel('list',true);});
@@ -557,9 +769,14 @@
     $('emptyButton').addEventListener('click',() => {$('contextFilter').value = 'all'; chooseList(quests.some(q => q.list === 'next' && !isDone(q)) ? 'next' : 'done'); showPanel('action',true);});
     $('mappingButton').addEventListener('click',() => {const show = $('mappingButton').getAttribute('aria-pressed') !== 'true'; $('mappingButton').setAttribute('aria-pressed',String(show)); document.body.classList.toggle('hide-gtd',!show);});
     function syncQuests() {
-      quests = [...exampleQuests,...state.items.filter(item => item.list === 'next').map(item => ({...item,project:null,goal:null,purpose:'尚未关联目的，保留你的判断。',area:'未关联关注领域',energy:'未指定',duration:'未估计',hint:'这是你理清后的下一步行动。'}))];
+      const examples = exampleQuests.map(q => {
+        const localized = {...q};
+        for (const field of ['title','project','goal','purpose','area','energy','duration','note','hint']) if (q[field]) localized[field] = t(q[field]);
+        return localized;
+      });
+      quests = [...examples,...state.items.filter(item => item.list === 'next').map(item => ({...item,project:null,goal:null,purpose:t('尚未关联目的，保留你的判断。'),area:t('未关联关注领域'),energy:t('未指定'),duration:t('未估计'),hint:t('这是你理清后的下一步行动。')}))];
     }
-    function stageName(name) { return {capture:'收集线索',clarify:'辨明线索',organize:'整理行囊',review:'营地回顾',engage:'踏上征途'}[name]; }
+    function stageName(name) { const label = {capture:'收集线索',clarify:'辨明线索',organize:'整理行囊',review:'营地回顾',engage:'踏上征途'}[name]; return label && t(label); }
     function setStage(name,updateHash = true) {
       if (!stageName(name)) name = 'engage';
       stage = name;
@@ -569,24 +786,30 @@
       $('stageLabel').textContent = stageName(name);
       renderJourney();
       if (updateHash && window.location.hash !== '#' + name) window.location.hash = name;
-      announce('已切换至' + stageName(name));
+      announce(formatted('已切换至','Opened ') + stageName(name));
     }
-    function feedback(id,text,error = false) { $(id).textContent = text; $(id).classList.toggle('error',error); }
-    function localReceipt() { return storageWritable ? '已保存到本地原型。' : storageMessage; }
+    const feedbackCopy = new Map();
+    function feedback(id,copy,error = false) {
+      feedbackCopy.set(id,copy);
+      $(id).textContent = typeof copy === 'function' ? copy() : t(copy);
+      $(id).classList.toggle('error',error);
+    }
+    function localReceipt() { return t(storageWritable ? '已保存到本地原型。' : storageMessage); }
+    function destinationReceipt(destination) { return formatted('已放入「' + t(lists[destination]) + '」。','Added to ' + t(lists[destination]) + '. ') + localReceipt(); }
     function openInbox(id) { clarifyId = id; setStage('clarify'); $('clarifyText').focus(); }
     function renderInbox() {
       const inbox = state.items.filter(item => item.list === 'inbox');
-      $('captureInboxCount').textContent = inbox.length + ' 项'; $('clarifyInboxCount').textContent = inbox.length + ' 项';
+      $('captureInboxCount').textContent = itemCount(inbox.length); $('clarifyInboxCount').textContent = itemCount(inbox.length);
       for (const target of ['captureRecent','clarifyQueue']) {
         $(target).replaceChildren();
         for (const item of target === 'captureRecent' ? inbox.slice(-5).reverse() : inbox) {
           const li = document.createElement('li'); const button = document.createElement('button');
           button.className = 'quest-item'; button.dataset.inboxId = item.id;
           if (target === 'clarifyQueue') button.setAttribute('aria-current',String(item.id === clarifyId));
-          button.append(textElement('strong',item.title),textElement('small','工作篮 · 等待理清'));
+          button.append(textElement('strong',item.title),textElement('small',t('工作篮 · 等待理清')));
           button.addEventListener('click',() => openInbox(item.id)); li.append(button); $(target).append(li);
         }
-        if (!inbox.length) $(target).append(textElement('li','暂无待理清事项。','empty-list'));
+        if (!inbox.length) $(target).append(textElement('li',t('暂无待理清事项。'),'empty-list'));
       }
     }
     function updateClarifyContext() { $('clarifyContextRow').hidden = $('clarifyDestination').value !== 'next'; }
@@ -622,32 +845,32 @@
       for (const [name,label] of Object.entries(lists)) {
         const li = document.createElement('li'); const button = document.createElement('button');
         button.className = 'organize-tab'; button.dataset.organize = name; button.setAttribute('aria-pressed',String(organizeList === name));
-        button.append(document.createTextNode(label),textElement('span',String(recordsFor(name).length)));
+        button.append(document.createTextNode(t(label)),textElement('span',String(recordsFor(name).length)));
         button.addEventListener('click',() => {organizeList = name; renderOrganize(); $('organizeTitle').tabIndex = -1; $('organizeTitle').focus();}); li.append(button); $('organizeCategories').append(li);
       }
       const records = recordsFor(organizeList);
-      $('organizeTitle').textContent = lists[organizeList]; $('organizeCount').textContent = records.length + ' 项 · 本地原型';
+      $('organizeTitle').textContent = t(lists[organizeList]); $('organizeCount').textContent = itemCount(records.length) + formatted(' · 本地原型',' · Local prototype');
       $('organizeRows').replaceChildren();
       for (const item of records) {
         const li = document.createElement('li'); const copy = textElement('div','','row-copy');
-        copy.append(textElement('b',item.title),textElement('small',item.note || '暂无备注'));
+        copy.append(textElement('b',item.title),textElement('small',item.note || t('暂无备注')));
         const button = document.createElement('button'); button.className = 'secondary';
-        if (organizeList === 'inbox') { button.textContent = '前往理清'; button.addEventListener('click',() => openInbox(item.id)); }
-        else if (['next','calendar','done'].includes(organizeList)) { button.textContent = organizeList === 'done' ? '查看完成记录' : '前往执行'; button.addEventListener('click',() => openExecution(item,organizeList)); }
-        else { button.textContent = '送回工作篮'; button.addEventListener('click',() => {item.list = 'inbox'; clarifyDrafts.delete(item.id); save(); renderJourney(); feedback('organizeFeedback','已送回工作篮，可以重新理清。' + localReceipt());}); }
+        if (organizeList === 'inbox') { button.textContent = t('前往理清'); button.addEventListener('click',() => openInbox(item.id)); }
+        else if (['next','calendar','done'].includes(organizeList)) { button.textContent = t(organizeList === 'done' ? '查看完成记录' : '前往执行'); button.addEventListener('click',() => openExecution(item,organizeList)); }
+        else { button.textContent = t('送回工作篮'); button.addEventListener('click',() => {item.list = 'inbox'; clarifyDrafts.delete(item.id); save(); renderJourney(); feedback('organizeFeedback',() => t('已送回工作篮，可以重新理清。') + localReceipt());}); }
         li.append(copy,button); $('organizeRows').append(li);
       }
       if (!records.length) {
-        const li = document.createElement('li'); li.append(textElement('p','这份清单还没有事项。'));
-        const button = textElement('button','收集新线索','secondary'); button.addEventListener('click',() => {setStage('capture'); $('captureText').focus();}); li.append(button); $('organizeRows').append(li);
+        const li = document.createElement('li'); li.append(textElement('p',t('这份清单还没有事项。')));
+        const button = textElement('button',t('收集新线索'),'secondary'); button.addEventListener('click',() => {setStage('capture'); $('captureText').focus();}); li.append(button); $('organizeRows').append(li);
       }
     }
     function renderJourney() {
       renderClarify(); renderInbox(); renderOrganize();
-      $('reviewInbox').textContent = recordsFor('inbox').length + ' 项待理清';
-      $('reviewNext').textContent = recordsFor('next').length + ' 项下一步行动';
-      $('reviewDone').textContent = recordsFor('done').length + ' 项完成记录';
-      document.querySelectorAll('[data-storage-status]').forEach(el => el.textContent = storageMessage);
+      $('reviewInbox').textContent = itemCount(recordsFor('inbox').length) + formatted('待理清',' to clarify');
+      $('reviewNext').textContent = itemCount(recordsFor('next').length) + formatted('下一步行动',' in Next Actions');
+      $('reviewDone').textContent = itemCount(recordsFor('done').length) + formatted('完成记录',' in Completed');
+      renderStorage();
     }
     document.querySelectorAll('[data-stage]').forEach((el,index,buttons) => {
       el.addEventListener('click',() => setStage(el.dataset.stage));
@@ -667,7 +890,7 @@
       const id = 'local-' + (globalThis.crypto?.randomUUID?.() || Date.now().toString(36) + '-' + Math.random().toString(36).slice(2));
       state.items.push({id,title,note,list:'inbox',context:'未指定',createdAt:new Date().toISOString()});
       state.captureDraft = {title:'',note:''}; save(); $('captureText').value = ''; $('captureNote').value = '';
-      renderJourney(); feedback('captureFeedback','已放入工作篮。' + localReceipt()); $('captureText').focus();
+      renderJourney(); feedback('captureFeedback',() => t('已放入工作篮。') + localReceipt()); $('captureText').focus();
     });
     for (const id of ['clarifyText','clarifyNote','clarifyContext','clarifyDestination']) $(id).addEventListener(id === 'clarifyText' || id === 'clarifyNote' ? 'input' : 'change',() => {rememberClarifyDraft(); updateClarifyContext();});
     $('clarifyForm').addEventListener('submit',event => {
@@ -677,20 +900,32 @@
       item.title = title; item.note = note; item.list = destination; item.context = destination === 'next' ? $('clarifyContext').value : '未指定';
       clarifyDrafts.delete(item.id); save(); syncQuests();
       chooseList(currentList,selectedId); organizeList = destination; renderJourney();
-      feedback('clarifyFeedback','已放入「' + lists[destination] + '」。' + localReceipt());
+      feedback('clarifyFeedback',() => destinationReceipt(destination));
       if (!$('clarifyForm').hidden) $('clarifyText').focus();
-      else { setStage('organize'); feedback('organizeFeedback','已放入「' + lists[destination] + '」。' + localReceipt()); }
+      else { setStage('organize'); feedback('organizeFeedback',() => destinationReceipt(destination)); }
     });
     $('reviewNote').value = state.reviewDraft;
-    $('reviewNoteState').textContent = state.reviewNote ? '已有保存的本地回顾笔记' : '尚未保存笔记';
-    $('reviewNote').addEventListener('input',() => {state.reviewDraft = $('reviewNote').value; save(); $('reviewNoteState').textContent = storageWritable ? '草稿已保留；点击下方按钮确认笔记。' : '草稿仅在当前页面保留。' + storageMessage;});
+    let reviewStatus = state.reviewNote ? '已有保存的本地回顾笔记' : '尚未保存笔记';
+    function renderReviewStatus() { $('reviewNoteState').textContent = typeof reviewStatus === 'function' ? reviewStatus() : t(reviewStatus); }
+    renderReviewStatus();
+    $('reviewNote').addEventListener('input',() => {state.reviewDraft = $('reviewNote').value; save(); reviewStatus = () => storageWritable ? t('草稿已保留；点击下方按钮确认笔记。') : t('草稿仅在当前页面保留。') + t(storageMessage); renderReviewStatus();});
     $('reviewForm').addEventListener('submit',event => {
       event.preventDefault(); if (!$('reviewNote').value.trim() || $('reviewNote').value.length > 5000) {feedback('reviewFeedback','请写下一点回顾，最多 5000 字。',true); $('reviewNote').focus(); return;}
       state.reviewNote = $('reviewNote').value; state.reviewDraft = state.reviewNote; save();
-      $('reviewNoteState').textContent = '已确认这份回顾笔记'; feedback('reviewFeedback','笔记已记下，不生成每周回顾完成记录。' + localReceipt());
+      reviewStatus = '已确认这份回顾笔记'; renderReviewStatus(); feedback('reviewFeedback',() => t('笔记已记下，不生成每周回顾完成记录。') + localReceipt());
     });
     $('reviewActionsButton').addEventListener('click',() => {$('contextFilter').value = 'all'; chooseList('next'); setStage('engage'); showPanel('list',true);});
     $('reviewDoneButton').addEventListener('click',() => {chooseList('done'); setStage('engage'); showPanel('list',true);});
+    $('languageButton').addEventListener('click',() => {
+      rememberClarifyDraft();
+      locale = locale === 'en' ? 'zh-CN' : 'en';
+      let remembered = true;
+      try { localStorage.setItem(LANGUAGE_KEY,locale); } catch { remembered = false; }
+      renderLanguage(); syncQuests(); render(); renderReceipt(); renderReviewStatus();
+      $('stageLabel').textContent = stageName(stage);
+      for (const [id,copy] of feedbackCopy) $(id).textContent = typeof copy === 'function' ? copy() : t(copy);
+      announce(formatted('已切换到中文。','Switched to English.') + (remembered ? '' : formatted('语言偏好无法保存，仅本次页面有效。',' Language preference could not be saved; this change lasts only for this page session.')));
+    });
     syncQuests();
     chooseList('next');
     setStage(window.location.hash.slice(1) || 'engage',false);

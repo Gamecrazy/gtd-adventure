@@ -1,122 +1,158 @@
-# GTD Adventure · 勇者冒险工作台
+# GTD Adventure
 
-让日常行动与生活方向相连，用明亮的幻想冒险界面体验 GTD。
+English | [简体中文](./README.zh-CN.md)
 
-这是一组持续迭代的界面原型，探索如何在不改变 GTD 语义的前提下，建立使命感、养成感和对系统的信任。当前方向是象牙白、金色与皇家蓝组成的勇者冒险世界：有誓约、卷轴、营地与旅途，不采用航海或现代科技叙事。
+Connect everyday actions to the life you want to build, through a bright fantasy-adventure GTD interface.
 
-**当前可交互版本：v8.1。** 文件名保留为 [`gtd-adventure-workbench-v8.html`](./docs/prototypes/gtd-adventure-workbench-v8.html)，便于延续本地体验记录。
+GTD Adventure is an evolving set of interface prototypes exploring **purpose, personal growth, and trust** without changing the meaning of GTD. Its current visual direction combines ivory, gold, and royal blue with shields, scrolls, mountains, trails, and a place to return to camp.
 
-> 这是独立的设计原型，不是生产级 GTD 应用。内置事项为示例；在原型里输入的内容不连接正式 GTD 系统，也没有云端同步。
+**Current interactive version: v8.2 — English by default, with a Chinese language switch.** The filename remains [`gtd-adventure-workbench-v8.html`](./docs/prototypes/gtd-adventure-workbench-v8.html) to preserve continuity with existing local prototype records.
 
-## 快速体验
+> This is a standalone design prototype, not a production GTD application. Built-in items are examples. Anything you enter stays in the local prototype; there is no connection to a live GTD system or cloud sync.
 
-1. 下载 [`gtd-adventure-workbench-v8.html`](./docs/prototypes/gtd-adventure-workbench-v8.html)。在 GitHub 文件页面选择下载原始文件；仓库中的源码预览不会直接运行页面。
-2. 用支持 JavaScript 和原生 `dialog` 的现代浏览器打开文件。
-3. 顶部应显示 **“v8.1 · 五步页签已接通”**。如果仍看到旧版标题，请刷新页面。
+## Try it
 
-页面的样式和交互代码都在同一个 HTML 文件中，不需要构建、不依赖在线字体或外部图片，体验页面本身也不需要安装依赖。
+1. Download [the current workbench HTML file](./docs/prototypes/gtd-adventure-workbench-v8.html). Use **Download raw file** on GitHub; the source-code preview does not run the interface.
+2. Open it in a modern browser with JavaScript and native `dialog` support.
+3. Look for **“v8.2 · Bilingual workbench”** at the top. It opens in English unless you previously selected Chinese. If you see an older version, check that you opened the latest file from this repository.
 
-建议先试一条完整路径：
+All styles and interaction code are included in that one HTML file. No build step, online fonts, external images, or dependency installation is needed to try the interface.
 
-**收集一件事 → 放入工作篮 → 理清为下一步行动 → 在执行页找到它 → 完成 → 查看记录或撤销。**
+A useful first journey:
 
-## 当前可以体验什么
+**Capture one thing → add it to Inbox → clarify it into a next action → find it in Engage → complete it → inspect the record or undo.**
 
-| 冒险入口 | GTD 概念 | 原型中的行为 |
+## Languages
+
+- **English is the default** on a first visit, regardless of browser language.
+- Use **中文** or **English** in the top-right corner to switch. Your choice is remembered when browser storage is available.
+- Navigation, buttons, instructions, empty states, feedback, completion receipts, displayed dates, and bundled examples are available in both languages.
+- **Your own words remain your own.** Task titles, notes, and review entries are never automatically translated, even if they match an interface label.
+- Switching languages preserves the active workspace, selected action, context filter, drafts, and completion records.
+- Language preferences are stored separately from task data. Existing item IDs and saved records remain compatible.
+- Historical v1–v7 explorations and detailed design-reference documents remain in Chinese. This bilingual release covers the current workbench and project README.
+
+## What works today
+
+| Adventure workspace | GTD step | Prototype behavior |
 | --- | --- | --- |
-| 收集线索 | 收集 | 记录事项和备注，放入工作篮；保留收集草稿。 |
-| 辨明线索 | 理清 | 将事项明确放入下一步行动、等待、将来/也许或参考资料。 |
-| 整理行囊 | 组织 | 浏览对应清单，进入执行或理清；将新收集的非行动事项送回工作篮。 |
-| 营地回顾 | 回顾 | 查看当前承诺和完成记录，填写并保存回顾笔记。 |
-| 踏上征途 | 执行 | 按情境选择行动，查看关联方向，完成、撤销或恢复事项。 |
+| Gather Clues | Capture | Record an item and notes in Inbox; retain capture drafts. |
+| Read the Clues | Clarify | Choose Next Actions, Waiting For, Someday/Maybe, or Reference. |
+| Pack Your Gear | Organize | Browse lists, open actions or Inbox items, and return captured non-action items to Inbox. |
+| Camp Review | Reflect | Inspect current commitments and completed actions; write and save review notes. |
+| Take the Trail | Engage | Choose an action by context, see its linked direction, and complete, undo, or restore it. |
 
-- 顶部页签支持点击和键盘方向键、Home、End。
-- 手机窄屏保留五步入口；执行页另有行动、日志和手记三个面板。
-- 同一条事项在各页之间流转，不复制成第二套任务。
-- 完成一个行动不会自动完成项目。
-- 保存回顾笔记不会被记成完成每周回顾。
-- 未关联目的、目标或项目时明确显示缺失状态，不自动为用户定义方向。
+The five workspaces share the same records. An item is not duplicated into a separate game-task system.
 
-界面中的冒险称谓仍是设计候选；当前确认的是整体风格，不意味着每个名称或交互已经定稿。
+- Tabs support clicking, arrow keys, Home, and End.
+- Narrow screens retain the five-step navigation. Engage also has action, quest-log, and trail-journal panels.
+- Completing an action **does not automatically complete its project**.
+- Saving review notes **does not count as completing a Weekly Review**.
+- Missing purpose, goal, or project links are shown honestly; the prototype does not invent a life direction for you.
+- The **GTD terms** button shows or hides canonical labels alongside the adventure language.
 
-## 设计理念
+The overall visual feeling is confirmed, but individual adventure names and interactions are still design candidates.
 
-### 使命感
+## Design principles
 
-帮助用户看清“为什么做”，让当下行动与自己选择的生活方向建立联系。使命感是体验目标，GTD 的规范层级仍使用“目的”。
+### Purpose
 
-### 养成感
+Help people understand why an action matters and connect it to a direction they choose for themselves. A sense of mission is an experience goal, not an extra GTD horizon.
 
-成长主体是用户本人。养成来自真实行动、选择和回顾，不是照顾一个虚拟角色，也不以完成数量评价人的价值。
+### Personal growth
 
-### 信任感
+The person using the system is the one who grows. Growth comes from real actions, choices, and reflection—not from caring for a virtual character or equating task counts with personal worth.
 
-通过可查的记录、清晰的状态和可恢复的操作建立可靠感，不用虚构分数或奖励代替可靠性。
+### Trust
 
-当前不引入积分、经验值、等级、连胜惩罚或虚拟资产。未来的系统助手定位为“长期伙伴和私人参谋”，属于二期；此原型没有对话、长期记忆、主动建议或代理执行能力。
+Build confidence through inspectable records, clear states, and recoverable actions. Fictional scores and rewards cannot substitute for reliability.
 
-完整原则见 [GTD 成长体验原则](./docs/product-reference/growth-experience-principles.md)，规范称谓见 [GTD 中文术语表](./docs/product-reference/glossary.zh-CN.md)。
+There are no points, XP, levels, streak penalties, or virtual assets in this prototype. The future assistant is envisioned as a **long-term companion and private advisor**, reserved for phase two. Conversation, long-term memory, proactive advice, and agentic execution are not implemented.
 
-## 本地数据与隐私
+### Keep the GTD meaning intact
 
-- 事项、完成记录、收集草稿和回顾笔记保存在当前浏览器的 `localStorage` 中。
-- 理清过程中尚未确认的编辑保留在当前页面内，切换页签或队列不会丢失，但刷新页面后不会保留这些未确认编辑。
-- 不同浏览器、文件位置或访问地址之间不保证共享记录；浏览器限制存储时，页面会明确提示更改仅在当前页面有效。
-- 本地记录无法读取时，原型不会自动覆盖旧记录。
-- 没有账户、云端备份、跨设备同步、导入导出或多人协作能力。
-- 本地存储不是加密保险箱。请使用演示内容，不要在此原型中存放敏感信息或唯一一份重要承诺。
-- 浏览器中的输入不会被写回 HTML 文件；发布源码与发布浏览器里的体验记录是不同的操作。
+Adventure language adds atmosphere, not a different method:
 
-## 测试
+| Adventure expression | Underlying concept |
+| --- | --- |
+| Your Oath | Purpose |
+| Milestone | Goal |
+| Main Quest | Project |
+| One Step | Next Action |
+| Clue Pouch | Inbox |
+| Camp Review | Reflection and review |
 
-页面使用原生 HTML、CSS 和 JavaScript。自动检查使用 Node.js 的测试运行器与 jsdom。
+An appointment remains an appointment; the theme must not invent a new travel task. A standalone action does not need an extra project just to fit the story.
 
-在本仓库根目录安装独立测试依赖后运行：
+See the detailed [growth experience principles](./docs/product-reference/growth-experience-principles.md), [GTD Chinese terminology](./docs/product-reference/glossary.zh-CN.md), and [responsive design rules](./docs/product-reference/responsive-rules.md). These reference documents are currently in Chinese.
+
+## Local data and privacy
+
+- Items, completion history, capture drafts, and review notes use the current browser’s `localStorage`.
+- Unconfirmed Clarify edits stay in memory while navigating tabs or the queue. Those unconfirmed edits do **not** survive a refresh.
+- Records are not guaranteed to be shared across browsers, file locations, or addresses. If storage is unavailable, the interface reports that changes last only for the current page session.
+- Unreadable existing records are not automatically overwritten.
+- There are no accounts, cloud backups, cross-device sync, import/export, or collaboration features.
+- Local storage is not an encrypted vault. Use demonstration content, not sensitive information or the only copy of an important commitment.
+- Browser input is not written back into the HTML file. Publishing source code does not publish the records in your browser.
+- Moving from an older copy of the HTML file to a different folder may use a different storage area. This release does not migrate data between locations.
+
+## Development and tests
+
+The interface uses plain HTML, CSS, and JavaScript. Automated checks use Node.js’s test runner and jsdom.
+
+From the repository root:
 
 ```sh
 npm ci
 npm test
 ```
 
-测试环境要求 Node.js 22.13.0 或以上。只浏览 HTML 页面不需要 Node.js。
+Tests require **Node.js 22.13.0 or later**. Node.js is not needed just to open the HTML interface.
 
-目前有 **27 项 DOM 与交互检查**，覆盖页签切换、键盘导航、事项流转、草稿保留、完成与恢复、旧版记录兼容、存储失败以及用户输入的安全文本展示。
+The **37 DOM and interaction checks** cover navigation, keyboard behavior, item flow, draft retention, completion and restore, legacy records, storage failures, English defaults, language switching, translation coverage, and literal, safe rendering of user text.
 
-这些检查不替代真实浏览器验证。当前尚未完成 1024×750 桌面一屏、手机布局截图及原生对话框焦点约束的浏览器验收，不宣称已经达到生产可用标准。
+These are not screenshot or real-browser layout tests. Desktop fit at 1024×750, mobile screenshots, and native-dialog focus trapping still need browser acceptance testing. The project does not claim production readiness.
 
-## 迭代档案
+For localization changes, keep item IDs and stored context values stable. Translate only authored interface copy and bundled examples, never user content. Run the full tests after interaction or language changes.
 
-| 版本 | 内容 | 定位 |
+## Design archive
+
+| Version | Exploration | Status |
 | --- | --- | --- |
-| [v1](./docs/prototypes/gtd-system-shell-v1.html) | 系统外壳 | 早期探索 |
-| [v2](./docs/prototypes/gtd-game-shell-v2.html) | 游戏界面 | 早期探索 |
-| [v3](./docs/prototypes/gtd-fantasy-warrior-v3.html) | 幻想勇士 | 风格探索 |
-| [v4](./docs/prototypes/gtd-fantasy-style-board-v4.html) | 多种幻想风格对照 | 风格探索 |
-| [v5](./docs/prototypes/gtd-bright-fantasy-style-board-v5.html) | 明亮幻想风格对照 | 风格探索 |
-| [v6](./docs/prototypes/gtd-sky-paladin-shell-v6.html) | 金蓝界面与航海表达 | 航海叙事已被替代 |
-| [v7](./docs/prototypes/gtd-adventure-paladin-shell-v7.html) | 明亮勇者冒险 | 已确认的视觉感受基线 |
-| [v8.1](./docs/prototypes/gtd-adventure-workbench-v8.html) | 五步可交互工作台 | 当前迭代入口 |
+| [v1](./docs/prototypes/gtd-system-shell-v1.html) | System shell | Early exploration |
+| [v2](./docs/prototypes/gtd-game-shell-v2.html) | Game interface | Early exploration |
+| [v3](./docs/prototypes/gtd-fantasy-warrior-v3.html) | Fantasy warrior | Style exploration |
+| [v4](./docs/prototypes/gtd-fantasy-style-board-v4.html) | Multiple fantasy directions | Style comparison |
+| [v5](./docs/prototypes/gtd-bright-fantasy-style-board-v5.html) | Brighter fantasy directions | Style comparison |
+| [v6](./docs/prototypes/gtd-sky-paladin-shell-v6.html) | Gold-and-blue UI with a nautical story | Story direction superseded |
+| [v7](./docs/prototypes/gtd-adventure-paladin-shell-v7.html) | Bright hero-adventure world | Approved visual baseline |
+| [v8.2](./docs/prototypes/gtd-adventure-workbench-v8.html) | Bilingual five-step workbench, English by default | Current entry point |
 
-历史版本用于记录设计过程，不代表每一版都实现了完整交互。
+Historical versions document the design process. They are not all fully interactive.
 
-## 后续重点
+## What comes next
 
-- 在真实浏览器中验证桌面与手机布局。
-- 继续逐页打磨信息密度、冒险称谓及 GTD 原名对照。
-- 逐步完善深层决策和编辑，而不是把基础原型误当成完整 GTD 系统。
-- 系统助手保留为二期，不提前加入当前体验。
+- Verify desktop and mobile layouts in real browsers, in both languages.
+- Refine each workspace’s density, adventure wording, and GTD terminology.
+- Develop deeper decisions and editing incrementally. Scheduling, project linking, the two-minute rule, attachments, and full list editors are not implemented yet.
+- Keep the assistant in phase two.
 
-反馈时请说明使用的版本、浏览器、屏幕尺寸、操作步骤、预期行为与实际结果；请勿附带真实的私人事项或敏感记录。
+For feedback, include the version, language, browser, screen size, steps, expected behavior, and actual result. Please do not include real private tasks or sensitive records.
 
-## 仓库范围
+## Repository scope
 
-本仓库独立发布冒险原型、设计原则与测试，不包含原 GTD 应用的后端代码、部署配置、私人迁移记录或原项目 Git 历史。当前没有配置在线托管；公开 GitHub 仓库不代表已经发布在线演示站点。
+This repository publishes only the standalone adventure prototypes, design principles, and tests. It excludes the original GTD application’s backend, deployment configuration, private migration records, and Git history.
 
-- `docs/prototypes/`：当前原型与历次风格探索。
-- `docs/prototypes/tests/`：27 项交互回归检查。
-- `docs/product-reference/`：体验原则、GTD 术语与响应式设计边界。
-- `package.json`、`package-lock.json`：独立测试依赖；浏览页面无需安装。
+**No online demo hosting is configured.** A public GitHub repository is not a deployed website.
 
-## 许可证
+- `README.md`: English project guide, the default repository homepage.
+- `README.zh-CN.md`: Chinese project guide.
+- `docs/prototypes/`: current workbench and historical style explorations.
+- `docs/prototypes/tests/`: interaction and localization regression checks.
+- `docs/product-reference/`: experience principles, GTD terminology, and responsive boundaries.
+- `package.json` and `package-lock.json`: test dependencies only.
 
-项目作者尚未选择许可证，本次发布不附加开源许可证。
+## License
+
+The author has not selected a license. No open-source license is attached to this release.

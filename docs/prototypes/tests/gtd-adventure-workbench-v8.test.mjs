@@ -6,10 +6,11 @@ import { JSDOM, VirtualConsole } from 'jsdom';
 
 const source = readFileSync(new URL('../gtd-adventure-workbench-v8.html', import.meta.url), 'utf8');
 const storageKey = 'gtd-adventure-workbench-v8-state';
+const languageKey = 'gtd-adventure-language';
 
 // DOM-only tests. No browser/network access, screenshot, or layout measurement.
 // Native dialog focus trapping and viewport fit still require visual/browser QA.
-function mount(t, { saved, failRead = false, failWrite = false, hash = '' } = {}) {
+function mount(t, { saved, failRead = false, failWrite = false, hash = '', language = 'zh-CN' } = {}) {
   const errors = [];
   const virtualConsole = new VirtualConsole();
   virtualConsole.on('jsdomError', error => errors.push(error));
@@ -21,6 +22,8 @@ function mount(t, { saved, failRead = false, failWrite = false, hash = '' } = {}
       window.HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', ''); };
       window.HTMLDialogElement.prototype.close = function () { this.removeAttribute('open'); };
       if (saved !== undefined) window.localStorage.setItem(storageKey, saved);
+      // Existing Chinese regression cases opt in; null tests a fresh default visit.
+      if (language !== null) window.localStorage.setItem(languageKey, language);
       if (failRead) window.Storage.prototype.getItem = () => { throw new Error('read unavailable'); };
       if (failWrite) window.Storage.prototype.setItem = () => { throw new Error('quota exceeded'); };
     },
@@ -164,7 +167,7 @@ test('malformed or unknown local records are not overwritten', t => {
 
 test('blocked storage and quota failure remain visibly transient without false save claims', t => {
   const blocked = mount(t, { failRead: true }); blocked.click('#completeButton');
-  assert.match(blocked.el('receiptStorage').textContent, /仅本次页面有效/);
+  assert.match(blocked.el('receiptStorage').textContent, /only for this page session/);
   const quota = mount(t, { failWrite: true }); quota.click('#completeButton');
   assert.match(quota.el('storageStatus').textContent, /未能保存/);
   assert.match(quota.el('receiptStorage').textContent, /刷新会丢失更改/);
@@ -373,4 +376,197 @@ test('storage failures stay visible on every new page and do not block navigatio
   assert.match(app.el('organizeFeedback').textContent,/未能保存/);
   assert.equal(app.el('nextCount').textContent,'4');
   for (const el of app.d.querySelectorAll('[data-storage-status]')) assert.match(el.textContent,/刷新会丢失更改/);
+});
+
+function assertEnglishInterface(app) {
+  const leftovers = [];
+  const walker = app.d.createTreeWalker(app.d.body, app.window.NodeFilter.SHOW_TEXT);
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (node.parentElement.closest('script,style,#languageButton')) continue;
+    if (/\p{Script=Han}/u.test(node.textContent)) leftovers.push(node.textContent.trim());
+  }
+  for (const el of app.d.querySelectorAll('[aria-label],[placeholder]')) {
+    for (const attr of ['aria-label','placeholder']) {
+      const value = el.getAttribute(attr);
+      if (/\p{Script=Han}/u.test(value || '')) leftovers.push(attr + ': ' + value);
+    }
+  }
+  assert.deepEqual(leftovers, [], 'all authored text, including hidden panels and accessible labels, is English');
+}
+
+test('fresh visits and unsupported preferences default to English, independent of browser language', t => {
+  for (const language of [null, 'fr', '', 'en']) {
+    const app = mount(t, { language });
+    assert.equal(app.d.documentElement.lang, 'en');
+    assert.equal(app.d.title, 'GTD Adventure · Workbench v8.2');
+    assert.equal(app.el('languageButton').textContent, '中文');
+    assert.equal(app.el('languageButton').getAttribute('aria-label'), 'Switch to Chinese');
+    assert.equal(app.el('actionTitle').textContent, 'Move my phone charger to the living room');
+    assertEnglishInterface(app);
+  }
+});
+
+test('language switches localize all five workspaces and remember the preference without creating task data', t => {
+  const app = mount(t, { language: null });
+  for (const stage of ['capture','clarify','organize','review','engage']) {
+    app.click('#tab-' + stage);
+    assertEnglishInterface(app);
+    app.click('#languageButton');
+    assert.equal(app.d.documentElement.lang, 'zh-CN');
+    assert.equal(app.el('languageButton').textContent, 'English');
+    assert.equal(app.el('stage-' + stage).hidden, false);
+    app.click('#languageButton');
+    assert.equal(app.el('stage-' + stage).hidden, false);
+    assertEnglishInterface(app);
+  }
+  assert.equal(app.window.localStorage.getItem(storageKey), null, 'switching languages does not write task state');
+  app.click('#languageButton');
+  const reloaded = mount(t, { language: app.window.localStorage.getItem(languageKey) });
+  assert.equal(reloaded.d.documentElement.lang, 'zh-CN');
+  assert.equal(reloaded.el('actionTitle').textContent, '把手机充电器移到客厅');
+  app.click('#languageButton');
+  const englishReload = mount(t, { language: app.window.localStorage.getItem(languageKey) });
+  assert.equal(englishReload.d.documentElement.lang, 'en');
+});
+
+test('English complete, restore, calendar, filter-empty and all-done paths contain no untranslated interface copy', t => {
+  const app = mount(t, { language: null });
+  app.click('[data-list="done"]'); assertEnglishInterface(app);
+  app.click('#emptyButton'); app.change('contextFilter','外出'); assertEnglishInterface(app);
+  app.click('#emptyButton'); app.click('#completeButton'); assertEnglishInterface(app);
+  assert.match(app.el('receiptProject').textContent, /project was not automatically completed/);
+  assert.match(app.el('historyList').textContent, /Completed/);
+  app.click('#undoButton'); assertEnglishInterface(app);
+  app.click('#appointmentButton');
+  assert.equal(app.el('timeValue').textContent, 'Sep 3, 18:30');
+  app.click('#completeButton'); assertEnglishInterface(app); app.click('#undoButton');
+  app.click('[data-list="next"]');
+  for (let i = 0; i < 3; i++) { app.click('#completeButton'); app.click('#continueButton'); }
+  assert.equal(app.el('nextCount').textContent, '0');
+  assertEnglishInterface(app);
+});
+
+test('switching languages preserves selection, filter, mapping, mobile panel, modal and completion history', t => {
+  const app = mount(t, { language: null });
+  app.change('contextFilter','书桌前'); app.click('#mappingButton'); app.click('[data-mobile="list"]');
+  app.click('#languageButton');
+  assert.equal(app.el('contextFilter').value, '书桌前');
+  assert.equal(app.el('actionTitle').textContent, '在纸上列出首页的三个核心案例');
+  assert.ok(app.d.body.classList.contains('hide-gtd'));
+  assert.equal(app.d.querySelector('[data-panel].mobile-active').dataset.panel, 'list');
+  app.click('#completeButton');
+  const saved = app.window.localStorage.getItem(storageKey);
+  app.click('#languageButton');
+  assert.equal(app.el('completionDialog').open, true);
+  assert.equal(app.el('receiptAction').textContent, 'List the three key case studies for my homepage on paper');
+  assert.match(app.el('receiptProject').textContent, /Redesign my portfolio/);
+  assert.equal(app.window.localStorage.getItem(storageKey), saved);
+  assertEnglishInterface(app);
+  app.click('#undoButton'); assert.equal(app.readSaved().done.portfolio, undefined);
+});
+
+test('English full capture and review flows translate feedback and every destination without changing GTD semantics', t => {
+  for (const destination of ['next','waiting','someday','reference']) {
+    const app = mount(t, { language: null });
+    app.click('#tab-capture'); app.submit('captureForm'); assertEnglishInterface(app);
+    capture(app, 'Call the bike shop', 'Ask about Saturday');
+    assert.match(app.el('captureFeedback').textContent, /Added to Inbox/);
+    assert.equal(app.el('captureInboxCount').textContent, '1 item');
+    app.click('#tab-clarify'); app.change('clarifyDestination', destination);
+    app.change('clarifyContext', '可通话处'); app.submit('clarifyForm');
+    assert.equal(app.readSaved().items[0].list, destination);
+    assert.equal(app.el('nextCount').textContent, destination === 'next' ? '4' : '3');
+    assertEnglishInterface(app);
+    if (destination !== 'next') { app.click('#organizeRows button'); assertEnglishInterface(app); }
+    app.click('#tab-review'); app.submit('reviewForm'); assertEnglishInterface(app);
+    app.input('reviewNote','Make time for family'); app.submit('reviewForm');
+    assert.match(app.el('reviewFeedback').textContent, /No Weekly Review completion was recorded/);
+    assert.deepEqual(app.readSaved().events, []);
+    app.click('#languageButton'); app.click('#languageButton');
+    assertEnglishInterface(app);
+    assert.equal(app.el('reviewNote').value, 'Make time for family');
+  }
+});
+
+test('user text matching a translation key remains literal in drafts, lists, action details, notes and receipts', t => {
+  const app = mount(t, { language: null });
+  const title = '工作篮', note = '完成这一步';
+  const id = capture(app, title, note);
+  app.input('captureText','另一条草稿'); app.input('captureNote','备注');
+  app.click('#tab-clarify'); app.input('clarifyText','工作篮');
+  app.change('clarifyContext','家中');
+  app.click('#languageButton'); app.click('#languageButton');
+  assert.equal(app.el('clarifyText').value, title);
+  assert.equal(app.el('clarifyNote').value, note);
+  assert.equal(app.el('clarifyContext').value, '家中');
+  assert.equal(app.el('clarifyContext').selectedOptions[0].textContent, 'At home');
+  assert.equal(app.el('captureText').value, '另一条草稿');
+  assert.equal(app.el('captureNote').value, '备注');
+  app.submit('clarifyForm'); app.click('#organizeRows button:last-child');
+  app.click('#tab-engage'); app.click(`[data-quest="${id}"]`);
+  assert.equal(app.el('actionTitle').textContent, title);
+  assert.equal(app.el('noteText').textContent, note);
+  app.click('#completeButton'); app.click('#languageButton'); app.click('#languageButton');
+  assert.equal(app.el('receiptAction').textContent, title);
+  assert.equal(app.readSaved().items[0].context, '家中');
+  assert.equal(app.readSaved().items[0].title, title);
+  assert.equal(app.readSaved().items[0].note, note);
+  app.click('#continueButton'); app.click('#tab-review'); app.input('reviewNote','营地回顾'); app.submit('reviewForm');
+  const saved = app.window.localStorage.getItem(storageKey);
+  app.click('#languageButton'); app.click('#languageButton');
+  assert.equal(app.el('reviewNote').value, '营地回顾');
+  assert.equal(app.window.localStorage.getItem(storageKey), saved);
+});
+
+test('a language switch preserves unconfirmed clarify drafts for multiple queued items', t => {
+  const app = mount(t, { language: null });
+  const first = capture(app,'First'), second = capture(app,'Second');
+  app.click('#tab-clarify'); app.input('clarifyText','第一条未确认编辑');
+  app.change('clarifyDestination','waiting');
+  app.click(`#clarifyQueue [data-inbox-id="${second}"]`);
+  app.input('clarifyNote','第二条草稿'); app.click('#languageButton');
+  assert.equal(app.el('clarifyNote').value,'第二条草稿');
+  app.click(`#clarifyQueue [data-inbox-id="${first}"]`);
+  assert.equal(app.el('clarifyText').value,'第一条未确认编辑');
+  assert.equal(app.el('clarifyDestination').value,'waiting');
+  app.click('#languageButton');
+  assert.equal(app.el('clarifyDestination').selectedOptions[0].textContent,'Waiting on someone · Waiting For');
+  assert.equal(app.readSaved().items[0].title,'First');
+});
+
+test('English reload uses legacy completion IDs and canonical contexts without rewriting existing records', t => {
+  const legacy = JSON.stringify({version:1,done:{sleep:'2026-09-03T08:00:00.000Z'},events:[{id:'sleep',type:'complete',at:'2026-09-03T08:00:00.000Z'}],items:[{id:'local-existing',list:'next',title:'我的中文行动',note:'保留原文',context:'书桌前',createdAt:'2026-09-03T07:00:00.000Z'}]});
+  const app = mount(t, { language: null, saved: legacy });
+  assert.equal(app.el('doneCount').textContent, '1');
+  assert.equal(app.window.localStorage.getItem(storageKey),legacy);
+  app.change('contextFilter','书桌前'); app.click('[data-quest="local-existing"]');
+  assert.equal(app.el('actionTitle').textContent,'我的中文行动');
+  assert.equal(app.el('contextValue').textContent,'At a desk');
+  app.click('[data-list="done"]');
+  assert.equal(app.el('actionTitle').textContent,'Move my phone charger to the living room');
+  assert.match(app.el('historyList').textContent,/Sep 3/);
+});
+
+test('English error feedback and storage failures are translated; invalid records remain untouched', t => {
+  for (const options of [{failRead:true},{failWrite:true},{saved:'{broken'}]) {
+    const app = mount(t, {language:null,...options});
+    app.input('captureText','One item'); app.submit('captureForm');
+    app.click('#tab-clarify'); app.input('clarifyText',''); app.submit('clarifyForm');
+    app.input('reviewNote','Review draft');
+    assertEnglishInterface(app);
+    if (options.saved) assert.equal(app.window.localStorage.getItem(storageKey),options.saved);
+    app.click('#languageButton'); app.click('#languageButton');
+    assertEnglishInterface(app);
+    if (options.failWrite) assert.match(app.el('announcement').textContent,/preference could not be saved/);
+  }
+});
+
+test('untrusted user markup remains text in English, including after a language switch', t => {
+  const app = mount(t, {language:null});
+  capture(app,'<img src=x onerror=alert(1)>','<script>danger()</script>');
+  app.click('#tab-clarify'); app.change('clarifyDestination','reference'); app.submit('clarifyForm');
+  app.click('#languageButton'); app.click('#languageButton');
+  assert.equal(app.el('organizeRows').querySelector('script,img'),null);
+  assert.match(app.el('organizeRows').textContent,/<script>danger/);
 });
